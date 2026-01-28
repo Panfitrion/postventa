@@ -1,0 +1,21 @@
+{
+  "name": "B2B",
+  "short_name": "Aplicación",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007aff",
+  "description": "Webapp",
+  "icons": [
+    {
+      "src": "./appstore.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./appstore.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

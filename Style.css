@@ -1,0 +1,25 @@
+:root {
+  --bg: #f8f8f8;
+  --ink: #333333;
+  --muted: #888888;
+  --card: #ffffff;
+  --border: #dddddd;
+  --highlight: #007aff;
+}
+
+h1 {
+  color: var(--highlight);
+  text-align: left;
+}
+
+.card p, .card label {
+  color: var(--muted);
+}
+
+input, textarea {
+  font-family: inherit;
+}
+
+@media (min-width: 720px) {
+  body { padding: 24px; }
+}
