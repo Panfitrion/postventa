@@ -1089,15 +1089,15 @@
           <h2 class="view-title" id="tabletClientName">Cliente</h2>
           <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
             <button class="icon-btn" onclick="app.changeTabletWeek(-1)" style="width: 40px; height: 40px; font-size: 18px;" title="Semana anterior">←</button>
-            <div style="display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 10px 16px; border-radius: 10px; border: 2px solid var(--border);">
-              <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Inicio:</label>
-              <input type="date" id="tabletStartDate" onchange="app.updateTabletDateRange()" style="padding: 8px; font-size: 14px; border: 1px solid var(--border); border-radius: 6px; min-height: 40px; width: 150px;">
-              <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-left: 8px;">Fin:</label>
-              <input type="date" id="tabletEndDate" onchange="app.updateTabletDateRange()" style="padding: 8px; font-size: 14px; border: 1px solid var(--border); border-radius: 6px; min-height: 40px; width: 150px;">
+            <div class="week-selector-badge" id="tabletWeekRange" onclick="app.resetTabletToCurrentWeek()" style="cursor: pointer; padding: 10px 16px; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; font-size: 14px; font-weight: 600;">
+              Cargando...
             </div>
             <button class="icon-btn" onclick="app.changeTabletWeek(1)" style="width: 40px; height: 40px; font-size: 18px;" title="Semana siguiente">→</button>
-            <button class="btn-secondary" onclick="app.resetTabletToCurrentWeek()" style="padding: 10px 16px; min-height: 40px; font-size: 14px;">🗓️ Hoy</button>
+            <button class="btn-secondary" onclick="app.downloadTabletPNG()" style="padding: 10px 16px; min-height: 40px; font-size: 14px;">📥 Descargar PNG</button>
           </div>
+          <!-- Inputs ocultos para compatibilidad con el código existente -->
+          <input type="date" id="tabletStartDate" style="display: none;">
+          <input type="date" id="tabletEndDate" style="display: none;">
         </div>
       </div>
 
@@ -2397,28 +2397,31 @@
         }, 2000);
       }
 
-      openTabletReadonlyView(index, client) {
+      async openTabletReadonlyView(index, client) {
         this.currentClientIndex = index;
         this.showView('tabletReadonlyView');
         
         document.getElementById('tabletClientName').textContent = client.name;
         
-        // Inicializar fechas
-        let startDate, endDate;
-        if (client.customDateRange && client.customDateRange.start && client.customDateRange.end) {
-          startDate = client.customDateRange.start;
-          endDate = client.customDateRange.end;
-        } else {
-          const { start, end } = OrderManager.getWeekDates(client.weekRange);
-          startDate = start;
-          endDate = end;
-        }
+        // Usar weekOffset para fechas coherentes con el rango de la cafetería
+        const { start, end } = OrderManager.getWeekDates(client.weekRange, this.weekOffset);
+        const startDate = this.formatDateForDB(start);
+        const endDate = this.formatDateForDB(end);
         
         document.getElementById('tabletStartDate').value = startDate;
         document.getElementById('tabletEndDate').value = endDate;
+        
+        // Actualizar badge de semana
+        document.getElementById('tabletWeekRange').textContent = 
+          `${OrderManager.formatDate(start)} - ${OrderManager.formatDate(end)}`;
+        
+        if (this.weekOffset !== 0) {
+          const weekText = this.weekOffset < 0 ? `${Math.abs(this.weekOffset)} sem. atrás` : `${this.weekOffset} sem. adelante`;
+          document.getElementById('tabletWeekRange').textContent += ` (${weekText})`;
+        }
 
-        this.renderTabletTable(client);
-        this.updateTabletTotals(client);
+        await this.renderTabletTable(client);
+        await this.updateTabletTotals(client);
 
         // Auto-actualizar cada 3 segundos
         if (this.tabletRefreshInterval) {
@@ -2431,51 +2434,110 @@
         }, 3000);
       }
 
-      async updateTabletDateRange() {
+      async changeTabletWeek(direction) {
+        this.weekOffset += direction;
         const clients = await this.store.getClients();
         const client = clients[this.currentClientIndex];
-        this.renderTabletTable(client);
-        this.updateTabletTotals(client);
-      }
-
-      async changeTabletWeek(direction) {
-        const startDate = new Date(document.getElementById('tabletStartDate').value);
-        const endDate = new Date(document.getElementById('tabletEndDate').value);
-        
-        startDate.setDate(startDate.getDate() + (direction * 7));
-        endDate.setDate(endDate.getDate() + (direction * 7));
-        
-        document.getElementById('tabletStartDate').value = startDate.toISOString().split('T')[0];
-        document.getElementById('tabletEndDate').value = endDate.toISOString().split('T')[0];
-        
-        await this.updateTabletDateRange();
+        await this.openTabletReadonlyView(this.currentClientIndex, client);
       }
 
       async resetTabletToCurrentWeek() {
+        this.weekOffset = 0;
         const clients = await this.store.getClients();
         const client = clients[this.currentClientIndex];
-        const dates = OrderManager.getWeekDates(client.weekRange, 0);
-        
-        document.getElementById('tabletStartDate').value = dates.start;
-        document.getElementById('tabletEndDate').value = dates.end;
-        
-        await this.updateTabletDateRange();
+        await this.openTabletReadonlyView(this.currentClientIndex, client);
       }
 
-      renderTabletTable(client) {
+      async downloadTabletPNG() {
+        const clients = await this.store.getClients();
+        const client = clients[this.currentClientIndex];
+        
+        const { start, end } = OrderManager.getWeekDates(client.weekRange, this.weekOffset);
+        const startFormatted = OrderManager.formatDate(start);
+        const endFormatted = OrderManager.formatDate(end);
+        const startStr = this.formatDateForDB(start);
+        const endStr = this.formatDateForDB(end);
+        
+        // Calcular totales
+        let gross = 0;
+        let returns = 0;
+
+        try {
+          const orders = await this.store.getOrders(client.id, startStr, endStr) || {};
+          
+          for (const productName in orders) {
+            const product = client.products.find(p => p.name === productName);
+            if (!product) continue;
+            
+            for (const fecha in orders[productName]) {
+              const cantidad = orders[productName][fecha];
+              gross += cantidad * product.price;
+            }
+          }
+
+          if (client.allowReturns) {
+            const returnsData = await this.store.getReturns(client.id, startStr, endStr) || {};
+            
+            for (const productName in returnsData) {
+              const product = client.products.find(p => p.name === productName);
+              if (!product) continue;
+              
+              const isReturnable = product.name.toLowerCase() === 'croissant' || 
+                                   product.name.toLowerCase() === 'chocolatín';
+              
+              if (isReturnable) {
+                for (const fecha in returnsData[productName]) {
+                  const cantidad = returnsData[productName][fecha];
+                  returns += cantidad * product.price;
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error al calcular totales:', error);
+        }
+
+        const net = Math.max(0, gross - returns);
+        const totals = { gross, returns, net };
+        
+        const canvas = await this.generateClientCanvas(client, startFormatted, endFormatted, totals);
+        const imageData = canvas.toDataURL('image/png');
+        
+        const a = document.createElement('a');
+        a.href = imageData;
+        a.download = `${client.name} ${startFormatted}-${endFormatted}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      async renderTabletTable(client) {
         const startDate = document.getElementById('tabletStartDate').value;
         const endDate = document.getElementById('tabletEndDate').value;
         
         if (!startDate || !endDate) return;
         
-        const days = OrderManager.getWeekDatesArray(startDate, endDate);
+        // Cargar datos de Supabase
+        if (USE_SUPABASE && client.id) {
+          this.currentOrders = await this.store.getOrders(client.id, startDate, endDate) || {};
+          this.currentReturns = await this.store.getReturns(client.id, startDate, endDate) || {};
+          this.mergeSupabaseData(client);
+        }
+        
+        const days = OrderManager.getWeekDays(client.weekRange);
+        const dates = OrderManager.getWeekDatesArray(client.weekRange, this.weekOffset);
         const thead = document.getElementById('tabletOrdersTableHead');
         const tbody = document.getElementById('tabletOrdersTableBody');
 
         thead.innerHTML = `
           <tr>
             <th>Producto</th>
-            ${days.map(d => `<th>${d}</th>`).join('')}
+            ${days.map((day, idx) => `
+              <th style="min-width: 100px;">
+                <div style="font-size: 11px; font-weight: 500; margin-bottom: 2px;">${day}</div>
+                <div style="font-size: 13px; font-weight: 700;">${dates[idx].getDate()} ${OrderManager.formatDate(dates[idx]).split(' ')[1]}</div>
+              </th>
+            `).join('')}
             <th>Total</th>
           </tr>
         `;
@@ -2501,11 +2563,53 @@
         tbody.innerHTML = html;
       }
 
-      updateTabletTotals(client) {
-        const totals = OrderManager.calculateTotals(client);
-        document.getElementById('tabletGrossTotal').textContent = `$${totals.gross.toFixed(2)}`;
-        document.getElementById('tabletReturnsTotal').textContent = `$${totals.returns.toFixed(2)}`;
-        document.getElementById('tabletNetTotal').textContent = `$${totals.net.toFixed(2)}`;
+      async updateTabletTotals(client) {
+        const startDate = document.getElementById('tabletStartDate').value;
+        const endDate = document.getElementById('tabletEndDate').value;
+        
+        let gross = 0;
+        let returns = 0;
+
+        try {
+          const orders = await this.store.getOrders(client.id, startDate, endDate) || {};
+          
+          for (const productName in orders) {
+            const product = client.products.find(p => p.name === productName);
+            if (!product) continue;
+            
+            for (const fecha in orders[productName]) {
+              const cantidad = orders[productName][fecha];
+              gross += cantidad * product.price;
+            }
+          }
+
+          if (client.allowReturns) {
+            const returnsData = await this.store.getReturns(client.id, startDate, endDate) || {};
+            
+            for (const productName in returnsData) {
+              const product = client.products.find(p => p.name === productName);
+              if (!product) continue;
+              
+              const isReturnable = product.name.toLowerCase() === 'croissant' || 
+                                   product.name.toLowerCase() === 'chocolatín';
+              
+              if (isReturnable) {
+                for (const fecha in returnsData[productName]) {
+                  const cantidad = returnsData[productName][fecha];
+                  returns += cantidad * product.price;
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error al calcular totales tablet:', error);
+        }
+
+        const net = Math.max(0, gross - returns);
+        
+        document.getElementById('tabletGrossTotal').textContent = `$${gross.toFixed(2)}`;
+        document.getElementById('tabletReturnsTotal').textContent = `$${returns.toFixed(2)}`;
+        document.getElementById('tabletNetTotal').textContent = `$${net.toFixed(2)}`;
       }
 
       async openDesktopOrderView(index, client) {
@@ -2743,35 +2847,99 @@
         await this.updateTotals(client);
       }
 
-      exportWeek() {
-        const client = this.store.getClients()[this.currentClientIndex];
+      async exportWeek() {
+        const clients = await this.store.getClients();
+        const client = clients[this.currentClientIndex];
         
-        let startFormatted, endFormatted;
-        if (client.customDateRange && client.customDateRange.start && client.customDateRange.end) {
-          const startDate = new Date(client.customDateRange.start + 'T00:00:00');
-          const endDate = new Date(client.customDateRange.end + 'T00:00:00');
-          startFormatted = OrderManager.formatDate(startDate);
-          endFormatted = OrderManager.formatDate(endDate);
-        } else {
-          const { start, end } = OrderManager.getWeekDates(client.weekRange);
-          startFormatted = OrderManager.formatDate(start);
-          endFormatted = OrderManager.formatDate(end);
+        // Obtener fechas del weekOffset actual
+        const { start, end } = OrderManager.getWeekDates(client.weekRange, this.weekOffset);
+        const startFormatted = OrderManager.formatDate(start);
+        const endFormatted = OrderManager.formatDate(end);
+        const startStr = this.formatDateForDB(start);
+        const endStr = this.formatDateForDB(end);
+        
+        // Calcular totales desde Supabase
+        let gross = 0;
+        let returns = 0;
+
+        try {
+          const orders = await this.store.getOrders(client.id, startStr, endStr) || {};
+          
+          for (const productName in orders) {
+            const product = client.products.find(p => p.name === productName);
+            if (!product) continue;
+            
+            for (const fecha in orders[productName]) {
+              const cantidad = orders[productName][fecha];
+              gross += cantidad * product.price;
+            }
+          }
+
+          if (client.allowReturns) {
+            const returnsData = await this.store.getReturns(client.id, startStr, endStr) || {};
+            
+            for (const productName in returnsData) {
+              const product = client.products.find(p => p.name === productName);
+              if (!product) continue;
+              
+              const isReturnable = product.name.toLowerCase() === 'croissant' || 
+                                   product.name.toLowerCase() === 'chocolatín';
+              
+              if (isReturnable) {
+                for (const fecha in returnsData[productName]) {
+                  const cantidad = returnsData[productName][fecha];
+                  returns += cantidad * product.price;
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error al calcular totales:', error);
         }
-        
-        const totals = OrderManager.calculateTotals(client);
 
-        if (!client.history) client.history = [];
-        client.history.push({
-          key: client.currentWeek.key,
-          start: startFormatted,
-          end: endFormatted,
-          totals,
-          data: JSON.parse(JSON.stringify(client.currentWeek.data)),
-          savedAt: new Date().toISOString()
-        });
+        const net = Math.max(0, gross - returns);
+        const totals = { gross, returns, net };
 
-        this.store.updateClient(this.currentClientIndex, client);
-        alert('✅ Semana guardada en el historial');
+        // Guardar en Supabase historial_semanas
+        if (USE_SUPABASE && client.id) {
+          try {
+            const { data, error } = await supabaseClient
+              .from('historial_semanas')
+              .insert({
+                cafeteria_id: client.id,
+                fecha_inicio: startStr,
+                fecha_fin: endStr,
+                total_bruto: gross,
+                total_regresados: returns,
+                total_neto: net
+              });
+
+            if (error) {
+              console.error('Error guardando historial:', error);
+              alert('⚠️ Error al guardar en Supabase: ' + error.message);
+              return;
+            }
+
+            alert('✅ Semana guardada en el historial');
+          } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Error al guardar: ' + error.message);
+          }
+        } else {
+          // Fallback a localStorage
+          if (!client.history) client.history = [];
+          client.history.push({
+            key: `${startFormatted}_${endFormatted}`,
+            start: startFormatted,
+            end: endFormatted,
+            totals,
+            data: JSON.parse(JSON.stringify(client.currentWeek.data)),
+            savedAt: new Date().toISOString()
+          });
+
+          await this.store.updateClient(this.currentClientIndex, client);
+          alert('✅ Semana guardada en el historial (local)');
+        }
       }
 
       viewHistory() {
