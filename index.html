@@ -3,641 +3,2840 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panfitrión - Vista Cafeterías</title>
+    <title>Cafeterías - Selector de Dispositivo</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #0a84ff;
+      --primary-dark: #0066cc;
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --text: #1d1d1f;
+      --text-secondary: #86868b;
+      --border: #d2d2d7;
+      --success: #34c759;
+      --danger: #ff3b30;
+      --warning: #ff9500;
+      --radius: 14px;
+      --shadow: 0 2px 10px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: var(--surface);
+      padding: 24px 12px;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .sidebar-header {
+      padding: 0 8px 16px 8px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .sidebar-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .cafe-button {
+      padding: 16px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      color: white;
+      text-align: left;
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: auto;
+    }
+
+    .cafe-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .cafe-button.active {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+    }
+
+    .add-cafe-btn {
+      padding: 14px 20px;
+      border: 2px dashed var(--primary);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--primary);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+      min-height: auto;
+    }
+
+    .add-cafe-btn:hover {
+      background: rgba(10,132,255,0.1);
+      border-style: solid;
+    }
+
+    /* Colores predefinidos para cafeterías */
+    .color-1 { background: #5ac8fa; }
+    .color-2 { background: #34c759; }
+    .color-3 { background: #ff3b30; }
+    .color-4 { background: #ff9500; }
+    .color-5 { background: #af52de; }
+    .color-6 { background: #ff2d55; }
+    .color-7 { background: #5856d6; }
+    .color-8 { background: #ffcc00; color: #1d1d1f; }
+
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .container {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 48px;
+      touch-action: manipulation;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(10,132,255,0.3);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(10,132,255,0.4);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 2px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg);
+      border-color: var(--primary);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #d62b20;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .cards-grid {
+      display: none;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .card-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: auto;
+    }
+
+    .card-actions {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .card:hover .card-actions {
+      opacity: 1;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      min-height: unset;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.05);
+      font-size: 18px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: rgba(0,0,0,0.1);
+      transform: scale(1.05);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.95);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 32px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: modalSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes modalSlide {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .form-input,
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--text);
+      transition: all 0.2s;
+      min-height: 52px;
+    }
+
+    .form-input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(10,132,255,0.1);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+    }
+
+    th, td {
+      padding: 16px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 200px;
+    }
+
+    th {
+      background: var(--bg);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
     
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    td:first-child {
+      text-align: left;
+      font-weight: 600;
+      max-width: 150px;
+      white-space: normal;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f5f7;
-            color: #1d1d1f;
-            display: flex;
-            min-height: 100vh;
-        }
+    tbody tr:hover {
+      background: rgba(10,132,255,0.05);
+    }
 
-        .sidebar {
-            width: 200px;
-            background: #fff;
-            padding: 24px 12px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+    .qty-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 0;
+    }
 
-        .cafe-button {
-            padding: 16px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            color: white;
-            text-align: left;
-        }
+    .qty-input {
+      width: 100%;
+      max-width: 120px;
+      padding: 16px 12px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      border: 2.5px solid var(--border);
+      border-radius: 12px;
+      min-height: 60px;
+      background: var(--surface);
+      color: var(--text);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      touch-action: manipulation;
+    }
 
-        .cafe-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        }
+    .qty-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 5px rgba(10,132,255,0.12);
+      transform: scale(1.02);
+      background: #ffffff;
+    }
+    
+    .qty-input:active {
+      transform: scale(0.98);
+    }
+    
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+      display: none;
+    }
+    
+    .qty-input {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
 
-        .cafe-button.active {
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-        }
+    .product-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
 
-        .main-content {
-            flex: 1;
-            padding: 40px;
-        }
+    .product-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
+    .product-name {
+      flex: 2;
+      font-weight: 600;
+    }
 
-        .date-range {
-            font-size: 28px;
-            font-weight: 700;
-            color: #1d1d1f;
-        }
+    .product-price {
+      flex: 1;
+      text-align: center;
+      color: var(--text-secondary);
+    }
 
-        .date-controls {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
 
-        .date-input {
-            padding: 8px 12px;
-            border: 2px solid #d2d2d7;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            min-width: 140px;
-        }
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
 
-        .date-input:focus {
-            outline: none;
-            border-color: #0a84ff;
-        }
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--bg);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
 
-        .week-nav-btn {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 8px;
-            background: #f5f5f7;
-            color: #1d1d1f;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin: 24px 0;
+      flex-wrap: wrap;
+    }
 
-        .week-nav-btn:hover {
-            background: #e5e5e7;
-            transform: scale(1.05);
-        }
+    .stat-card {
+      flex: 1;
+      min-width: 200px;
+      background: var(--surface);
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
 
-        .week-nav-btn:active {
-            transform: scale(0.95);
-        }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
 
-        .reset-btn {
-            padding: 8px 16px;
-            background: #f5f5f7;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            color: #1d1d1f;
-            transition: all 0.2s;
-        }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+    }
 
-        .reset-btn:hover {
-            background: #e5e5e7;
-        }
+    .view {
+      display: none;
+    }
 
-        .export-btn {
-            padding: 12px 24px;
-            background: white;
-            border: 2px solid #0a84ff;
-            border-radius: 10px;
-            color: #0a84ff;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    .view.active {
+      display: block;
+    }
 
-        .export-btn:hover {
-            background: #0a84ff;
-            color: white;
-        }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
 
-        .table-container {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        }
+    .dashboard-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 8px;
-        }
+    .dashboard-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
+    }
 
-        th {
-            padding: 16px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 700;
-            color: #1d1d1f;
-            border-bottom: 3px solid #e5e5e7;
-        }
+    .dashboard-card-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
 
-        th:first-child {
-            text-align: left;
-            padding-left: 24px;
-        }
+    .dashboard-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
 
-        td {
-            padding: 20px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: 600;
-        }
+    .dashboard-card-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
 
-        td:first-child {
-            text-align: left;
-            padding-left: 24px;
-            font-size: 20px;
-            font-weight: 700;
-        }
+    .dashboard-card-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
 
-        tbody tr {
-            transition: background 0.2s;
-        }
+    .date-selector {
+      background: var(--surface);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
 
-        tbody tr:hover {
-            background: #f9f9f9;
-        }
+    .date-selector-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
 
-        .number-circle {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 50px;
-            min-height: 50px;
-            border-radius: 50%;
-            border: 3px solid #1d1d1f;
-            padding: 8px;
-        }
+    header.hidden {
+      display: none;
+    }
 
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            color: #86868b;
-        }
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 20px;
+      min-height: 40px;
+    }
 
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-        }
+    .back-button:hover {
+      background: var(--bg);
+      border-color: var(--primary);
+      transform: translateX(-4px);
+    }
 
-        /* Colores predefinidos para cafeterías */
-        .color-1 { background: #5ac8fa; } /* Admin - Azul */
-        .color-2 { background: #34c759; } /* Break - Verde */
-        .color-3 { background: #ff3b30; } /* Blom - Rojo */
-        .color-4 { background: #ff9500; } /* Ponde - Naranja */
-        .color-5 { background: #af52de; } /* Zurv - Morado */
-        .color-6 { background: #ff2d55; } /* Rosa */
-        .color-7 { background: #5856d6; } /* Índigo */
-        .color-8 { background: #ffcc00; } /* Amarillo */
+    .view-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
 
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 60px;
-            font-size: 18px;
-            color: #86868b;
-        }
+    .view-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+    .view-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-        .spinner {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(0,0,0,0.1);
-            border-radius: 50%;
-            border-top-color: #0a84ff;
-            animation: spin 1s linear infinite;
-            margin-right: 12px;
-        }
-    </style>
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 16px;
+      }
+
+      .sidebar-header {
+        display: none;
+      }
+
+      .cafe-button {
+        min-width: 150px;
+        flex-shrink: 0;
+      }
+
+      .container {
+        padding: 16px;
+      }
+
+      .header-content {
+        padding: 0 16px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .modal {
+        padding: 24px;
+      }
+
+      .qty-input {
+        max-width: 100%;
+        min-height: 64px;
+        font-size: 22px;
+        padding: 18px 12px;
+      }
+
+      button {
+        min-height: 52px;
+      }
+    }
+
+    /* Estilos para vista móvil - Lista de checkboxes */
+    .mobile-order-view {
+      display: none;
+    }
+
+    .mobile-date-header {
+      background: var(--surface);
+      padding: 20px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .mobile-date-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .mobile-cafe-name {
+      font-size: 16px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .mobile-products-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mobile-product-item {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: all 0.2s;
+      border: 3px solid transparent;
+    }
+
+    .mobile-product-item.checked {
+      border-color: var(--success);
+      background: rgba(52, 199, 89, 0.05);
+    }
+
+    .mobile-product-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .mobile-checkbox {
+      width: 60px;
+      height: 60px;
+      border: 3px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .mobile-checkbox.checked {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .mobile-checkbox-icon {
+      font-size: 32px;
+      color: white;
+      display: none;
+    }
+
+    .mobile-checkbox.checked .mobile-checkbox-icon {
+      display: block;
+    }
+
+    .mobile-sync-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(52, 199, 89, 0.4);
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 1000;
+    }
+
+    .mobile-sync-indicator.show {
+      display: flex;
+    }
+
+    /* Vista tablet - Solo lectura */
+    .tablet-readonly-view {
+      display: none;
+    }
+
+    .tablet-readonly-indicator {
+      background: rgba(10,132,255,0.1);
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      text-align: center;
+      color: var(--primary);
+      font-weight: 600;
+      border: 2px solid var(--primary);
+    }
+
+    .auto-refresh-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      display: inline-block;
+      animation: spin 2s linear infinite;
+    }
+
+    .text-center { text-align: center; }
+    .text-secondary { color: var(--text-secondary); }
+    .mb-16 { margin-bottom: 16px; }
+    .mt-24 { margin-top: 24px; }
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
-    <div class="sidebar" id="sidebar">
-        <!-- Botones de cafeterías se cargarán aquí -->
+  <div class="sidebar" id="sidebarCafes">
+    <div class="sidebar-header">
+      <div class="sidebar-title">🥐 Panfitrión</div>
+      <div class="sidebar-subtitle">CAFETERÍAS</div>
+    </div>
+    <button class="cafe-button" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-bottom: 8px;" onclick="app.showDashboard()">
+      <span>🏠 Inicio</span>
+    </button>
+    <!-- Botones de cafeterías se cargarán aquí -->
+  </div>
+
+  <div class="main-wrapper">
+  <header>
+    <div class="header-content">
+      <div>
+        <h1>🥐 Panfitrión</h1>
+        <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+          <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">📅 RANGO GENERAL:</span>
+          <input type="date" id="globalDateStart" style="padding: 6px 10px; font-size: 13px; border: 2px solid var(--border); border-radius: 8px; min-height: 36px; width: 140px;">
+          <span style="color: var(--text-secondary); font-weight: 600;">a</span>
+          <input type="date" id="globalDateEnd" style="padding: 6px 10px; font-size: 13px; border: 2px solid var(--border); border-radius: 8px; min-height: 36px; width: 140px;">
+          <span id="connectionStatus" style="margin-left: 12px; font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 600;"></span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" onclick="app.showImportModal()">📥 Importar CSV</button>
+        <button class="btn-secondary" onclick="app.exportAllPDF()">📄 Exportar Todo</button>
+        <button class="btn-primary" onclick="app.showClientModal()">➕ Nueva Cafetería</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- View: Dashboard/Inicio -->
+    <div id="clientsView" class="view active">
+      <h2 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">📊 Dashboard General</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 24px;">Resumen de todas las cafeterías</p>
+
+      <div class="date-selector">
+        <span class="date-selector-label">📅 Rango de fechas:</span>
+        <input type="date" id="dashboardStartDate" class="form-input" style="max-width: 180px; min-height: 44px;">
+        <span style="color: var(--text-secondary); font-weight: 600;">a</span>
+        <input type="date" id="dashboardEndDate" class="form-input" style="max-width: 180px; min-height: 44px;">
+        <button class="btn-primary" onclick="app.loadDashboardData()" style="padding: 10px 20px; min-height: 44px;">🔄 Actualizar</button>
+      </div>
+
+      <div id="dashboardContent">
+        <div class="dashboard-grid" id="dashboardGrid">
+          <!-- Se cargarán las tarjetas aquí -->
+        </div>
+      </div>
+
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-state-icon">📦</div>
+        <h3>No hay cafeterías</h3>
+        <p>Crea tu primera cafetería o importa desde CSV</p>
+        <button class="btn-primary mt-24" onclick="app.showClientModal()">Crear Cafetería</button>
+      </div>
     </div>
 
-    <div class="main-content">
-        <div class="header">
-            <div class="date-range" id="dateRange">Rango fechas</div>
-            <div class="date-controls">
-                <button class="week-nav-btn" onclick="changeWeek(-1)" title="Semana anterior">←</button>
-                <input type="date" class="date-input" id="startDate" onchange="updateDateRange()">
-                <span style="color: #86868b; font-weight: 600;">a</span>
-                <input type="date" class="date-input" id="endDate" onchange="updateDateRange()">
-                <button class="reset-btn" onclick="resetToCurrentWeek()">🗓️ Hoy</button>
-                <button class="week-nav-btn" onclick="changeWeek(1)" title="Semana siguiente">→</button>
-            </div>
-            <button class="export-btn" onclick="exportToPNG()">Export PNG</button>
+    <!-- View: Pedidos -->
+    <div id="ordersView" class="view">
+      <button class="back-button" onclick="app.showDashboard()">
+        ← Volver a Inicio
+      </button>
+      
+      <div class="view-header">
+        <div>
+          <h2 class="view-title" id="ordersClientName">Cliente</h2>
+          <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
+            <button class="icon-btn" onclick="app.changeWeek(-1)" style="width: 32px; height: 32px; font-size: 16px;" title="Semana anterior">←</button>
+            <span class="badge" id="ordersWeekRange" style="padding: 8px 16px; font-size: 14px; cursor: pointer;" onclick="app.resetToCurrentWeek()" title="Click para volver a la semana actual">Semana</span>
+            <button class="icon-btn" onclick="app.changeWeek(1)" style="width: 32px; height: 32px; font-size: 16px;" title="Semana siguiente">→</button>
+          </div>
+        </div>
+        <div class="view-actions">
+          <button class="btn-secondary" onclick="app.editClient(app.currentClientIndex)" style="padding: 8px 16px; font-size: 13px; min-height: 36px;">✏️ Editar</button>
+          <button class="btn-secondary" onclick="app.viewHistory()" style="padding: 8px 16px; font-size: 13px; min-height: 36px;">📜 Historial</button>
+          <button class="btn-danger" onclick="app.resetWeek()" style="padding: 8px 16px; font-size: 13px; min-height: 36px;">🔄 Reiniciar</button>
+          <button class="btn-danger" onclick="app.deleteClient(app.currentClientIndex)" style="padding: 8px 16px; font-size: 13px; min-height: 36px;">🗑️ Eliminar</button>
+          <button class="btn-success" onclick="app.exportWeek()" style="padding: 8px 16px; font-size: 13px; min-height: 36px;">💾 Guardar</button>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; margin-bottom: 24px;">
+        <div class="stats-row" style="flex: 1; margin: 0;">
+          <div class="stat-card">
+            <div class="stat-label">Total Bruto</div>
+            <div class="stat-value" id="grossTotal">$0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Regresados</div>
+            <div class="stat-value" id="returnsTotal">$0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Neto</div>
+            <div class="stat-value" id="netTotal">$0.00</div>
+          </div>
         </div>
 
-        <div class="table-container" id="tableContainer">
-            <div class="loading">
-                <div class="spinner"></div>
-                Cargando cafeterías...
-            </div>
+        <div style="background: var(--surface); padding: 12px; border-radius: 10px; box-shadow: var(--shadow); border: 1px solid var(--border); flex-shrink: 0;">
+          <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase;">📅 Fechas</div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <input type="date" id="customDateStart" style="padding: 8px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; width: 130px; min-height: 36px;">
+            <span style="color: var(--text-secondary); font-size: 12px;">a</span>
+            <input type="date" id="customDateEnd" style="padding: 8px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; width: 130px; min-height: 36px;">
+          </div>
         </div>
+      </div>
+
+      <div class="table-container">
+        <table id="ordersTable">
+          <thead id="ordersTableHead"></thead>
+          <tbody id="ordersTableBody"></tbody>
+        </table>
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-        // ============================================
-        // CONFIGURACIÓN DE SUPABASE
-        // ============================================
-        const SUPABASE_URL = 'https://bjuduoggpnvwjuqqbwuz.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqdWR1b2dncG52d2p1cXFid3V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwOTg5MDcsImV4cCI6MjA4NDY3NDkwN30.tCtLbpj4e3KvsB3uPbg3uQiZRPpOLlswiDtWwlsZUXE';
+    <!-- View: Historial -->
+    <div id="historyView" class="view">
+      <button class="back-button" onclick="app.showView('ordersView')">
+        ← Volver a Pedidos
+      </button>
+      
+      <div class="view-header">
+        <h2 class="view-title" id="historyClientName">Historial</h2>
+      </div>
+      
+      <div id="historyList"></div>
+    </div>
+
+    <!-- View: Móvil - Toma de Pedidos Simple -->
+    <div id="mobileOrderView" class="view mobile-order-view">
+      <button class="back-button" onclick="app.showView('clientsView')">
+        ← Volver a Cafeterías
+      </button>
+
+      <div class="mobile-date-header">
+        <div class="mobile-date-title" id="mobileDateTitle">Miércoles 28 Enero</div>
+        <div class="mobile-cafe-name" id="mobileCafeName">Cafetería</div>
+      </div>
+
+      <div class="mobile-products-list" id="mobileProductsList">
+        <!-- Los productos se cargarán dinámicamente aquí -->
+      </div>
+
+      <div class="mobile-sync-indicator" id="mobileSyncIndicator">
+        <span>✓</span>
+        <span>Sincronizado</span>
+      </div>
+    </div>
+
+    <!-- View: Tablet - Solo Lectura -->
+    <div id="tabletReadonlyView" class="view tablet-readonly-view">
+      <button class="back-button" onclick="app.showView('clientsView')">
+        ← Volver a Cafeterías
+      </button>
+
+      <div class="tablet-readonly-indicator">
+        <span class="auto-refresh-indicator">
+          <span class="spinner">🔄</span>
+          <span>Modo solo lectura · Actualizando automáticamente</span>
+        </span>
+      </div>
+
+      <div class="view-header">
+        <div>
+          <h2 class="view-title" id="tabletClientName">Cliente</h2>
+          <span class="badge" id="tabletWeekRange">Semana</span>
+        </div>
+      </div>
+
+      <div class="stats-row" style="margin-bottom: 24px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Bruto</div>
+          <div class="stat-value" id="tabletGrossTotal">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Regresados</div>
+          <div class="stat-value" id="tabletReturnsTotal">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Neto</div>
+          <div class="stat-value" id="tabletNetTotal">$0.00</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table id="tabletOrdersTable">
+          <thead id="tabletOrdersTableHead"></thead>
+          <tbody id="tabletOrdersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  </div> <!-- cierre main-wrapper -->
+
+  <!-- Modal: Cliente Form -->
+  <div id="clientModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="clientModalTitle">Nueva Cafetería</h2>
+        <button class="icon-btn" onclick="app.closeModal('clientModal')">✕</button>
+      </div>
+      
+      <form id="clientForm">
+        <div class="form-group">
+          <label class="form-label">Nombre de la cafetería</label>
+          <input type="text" class="form-input" id="clientName" placeholder="Ej. Cafetería Centro" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Color de identificación</label>
+          <input type="color" class="form-input" id="clientColor" value="#5ac8fa" style="height: 60px; cursor: pointer;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rango de semana</label>
+          <select id="weekRange" class="form-input" style="cursor: pointer;">
+            <option value="mon-sat">Lunes a Sábado</option>
+            <option value="tue-mon">Martes a Lunes</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Permitir regresados (Croissant y Chocolatín)</label>
+          <select id="allowReturns" class="form-input">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Productos</label>
+          <div id="productsList" class="product-list"></div>
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <input type="text" class="form-input" id="productName" placeholder="Nombre del producto" style="flex: 2;">
+            <input type="number" class="form-input" id="productPrice" placeholder="Precio" step="0.01" style="flex: 1;">
+            <button type="button" class="btn-primary" onclick="app.addProduct()">➕</button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="app.closeModal('clientModal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Import CSV -->
+  <div id="importModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Importar desde CSV</h2>
+        <button class="icon-btn" onclick="app.closeModal('importModal')">✕</button>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Archivo CSV</label>
+        <input type="file" id="csvFile" accept=".csv" class="form-input">
+      </div>
+
+      <div class="text-secondary mb-16" style="font-size: 13px;">
+        <strong>Formato esperado:</strong> cafeteria, producto, precio, regresados, rango
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="app.closeModal('importModal')">Cancelar</button>
+        <button class="btn-primary" onclick="app.importCSV()">Importar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // ============================================
+    // CONFIGURACIÓN DE SUPABASE
+    // ============================================
+    const SUPABASE_URL = 'https://bjuduoggpnvwjuqqbwuz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqdWR1b2dncG52d2p1cXFid3V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwOTg5MDcsImV4cCI6MjA4NDY3NDkwN30.tCtLbpj4e3KvsB3uPbg3uQiZRPpOLlswiDtWwlsZUXE';
+    
+    // Inicializar cliente de Supabase
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ============================================
+    // DETECCIÓN DE MODO (LOCAL vs SUPABASE)
+    // ============================================
+    const USE_SUPABASE = SUPABASE_URL !== 'TU_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'TU_SUPABASE_ANON_KEY';
+    
+    if (USE_SUPABASE) {
+      console.log('✅ Modo SUPABASE activado');
+    } else {
+      console.log('⚠️ Modo LOCAL (localStorage) - Configura Supabase para sincronización');
+    }
+    // Detectar tipo de dispositivo
+    const DeviceDetector = {
+      isMobile() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const maxWidth = window.innerWidth;
+        // Considera móvil si el ancho es menor a 768px o es un iPhone
+        return maxWidth < 768 || /iphone/.test(userAgent);
+      },
+      isTablet() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const maxWidth = window.innerWidth;
+        // Considera tablet si el ancho es entre 768px y 1024px o es un iPad
+        return (maxWidth >= 768 && maxWidth <= 1024) || /ipad/.test(userAgent);
+      },
+      getDeviceType() {
+        if (this.isMobile()) return 'mobile';
+        if (this.isTablet()) return 'tablet';
+        return 'desktop';
+      }
+    };
+
+    // ============================================
+    // SUPABASE STORE - Gestión de datos
+    // ============================================
+    class SupabaseStore {
+      constructor() {
+        this.storageKey = 'panfitrion_v2';
+        this.useSupabase = USE_SUPABASE;
+        this.data = { clients: [], globalDateRange: {} };
+        this.clientsCache = [];
+      }
+
+      // ============================================
+      // MÉTODOS DE CAFETERÍAS
+      // ============================================
+      
+      async getClients() {
+        if (!this.useSupabase) {
+          return this.loadLocalClients();
+        }
+
+        try {
+          const { data: cafeterias, error } = await supabaseClient
+            .from('cafeterias')
+            .select(`
+              *,
+              productos (*)
+            `)
+            .order('created_at', { ascending: true });
+
+          if (error) throw error;
+
+          // Transformar estructura de Supabase a formato de la app
+          this.clientsCache = cafeterias.map(cafe => ({
+            id: cafe.id,
+            name: cafe.nombre,
+            weekRange: cafe.rango_semana,
+            allowReturns: cafe.permite_regresados,
+            products: cafe.productos.map(p => ({
+              id: p.id,
+              name: p.nombre,
+              price: p.precio
+            })),
+            currentWeek: null,
+            history: []
+          }));
+
+          return this.clientsCache;
+        } catch (error) {
+          console.error('Error al cargar cafeterías:', error);
+          return this.loadLocalClients();
+        }
+      }
+
+      async addClient(client) {
+        if (!this.useSupabase) {
+          return this.addLocalClient(client);
+        }
+
+        try {
+          // 1. Crear cafetería
+          const { data: cafeteria, error: cafeError } = await supabaseClient
+            .from('cafeterias')
+            .insert({
+              nombre: client.name,
+              rango_semana: client.weekRange,
+              permite_regresados: client.allowReturns
+            })
+            .select()
+            .single();
+
+          if (cafeError) throw cafeError;
+
+          // 2. Crear productos
+          if (client.products.length > 0) {
+            const productos = client.products.map(p => ({
+              cafeteria_id: cafeteria.id,
+              nombre: p.name,
+              precio: p.price
+            }));
+
+            const { error: prodError } = await supabaseClient
+              .from('productos')
+              .insert(productos);
+
+            if (prodError) throw prodError;
+          }
+
+          console.log('✅ Cafetería creada en Supabase');
+          return cafeteria.id;
+        } catch (error) {
+          console.error('Error al crear cafetería:', error);
+          return this.addLocalClient(client);
+        }
+      }
+
+      async updateClient(index, client) {
+        if (!this.useSupabase || !client.id) {
+          return this.updateLocalClient(index, client);
+        }
+
+        try {
+          const { error } = await supabaseClient
+            .from('cafeterias')
+            .update({
+              nombre: client.name,
+              permite_regresados: client.allowReturns
+            })
+            .eq('id', client.id);
+
+          if (error) throw error;
+
+          // Actualizar productos si cambiaron
+          // (Nota: esto es más complejo, simplificado por ahora)
+          console.log('✅ Cafetería actualizada');
+        } catch (error) {
+          console.error('Error al actualizar cafetería:', error);
+          this.updateLocalClient(index, client);
+        }
+      }
+
+      async deleteClient(index) {
+        const clients = await this.getClients();
+        const client = clients[index];
+
+        if (!this.useSupabase || !client.id) {
+          return this.deleteLocalClient(index);
+        }
+
+        try {
+          const { error } = await supabaseClient
+            .from('cafeterias')
+            .delete()
+            .eq('id', client.id);
+
+          if (error) throw error;
+          console.log('✅ Cafetería eliminada');
+        } catch (error) {
+          console.error('Error al eliminar cafetería:', error);
+          this.deleteLocalClient(index);
+        }
+      }
+
+      // ============================================
+      // MÉTODOS DE PEDIDOS
+      // ============================================
+
+      async getOrders(cafeteriaId, startDate, endDate) {
+        if (!this.useSupabase) return {};
+
+        try {
+          const { data, error } = await supabaseClient
+            .from('pedidos')
+            .select(`
+              *,
+              productos (id, nombre, precio)
+            `)
+            .eq('cafeteria_id', cafeteriaId)
+            .gte('fecha', startDate)
+            .lte('fecha', endDate);
+
+          if (error) throw error;
+
+          // Transformar a estructura de la app
+          const orders = {};
+          data.forEach(pedido => {
+            const productName = pedido.productos.nombre;
+            if (!orders[productName]) orders[productName] = {};
+            orders[productName][pedido.fecha] = pedido.cantidad;
+          });
+
+          return orders;
+        } catch (error) {
+          console.error('Error al cargar pedidos:', error);
+          return {};
+        }
+      }
+
+      async setOrderQuantity(cafeteriaId, productoId, fecha, cantidad) {
+        if (!this.useSupabase) return;
+
+        try {
+          const { error } = await supabaseClient
+            .from('pedidos')
+            .upsert({
+              cafeteria_id: cafeteriaId,
+              producto_id: productoId,
+              fecha: fecha,
+              cantidad: cantidad
+            }, {
+              onConflict: 'cafeteria_id,producto_id,fecha'
+            });
+
+          if (error) throw error;
+        } catch (error) {
+          console.error('Error al guardar pedido:', error);
+        }
+      }
+
+      // ============================================
+      // MÉTODOS DE REGRESADOS (DIARIOS)
+      // ============================================
+
+      async getReturns(cafeteriaId, startDate, endDate) {
+        if (!this.useSupabase) return {};
+
+        try {
+          const { data, error } = await supabaseClient
+            .from('regresados')
+            .select(`
+              *,
+              productos (id, nombre, precio)
+            `)
+            .eq('cafeteria_id', cafeteriaId)
+            .gte('fecha', startDate)
+            .lte('fecha', endDate);
+
+          if (error) throw error;
+
+          // Transformar a estructura de la app
+          const returns = {};
+          data.forEach(regresado => {
+            const productName = regresado.productos.nombre;
+            if (!returns[productName]) returns[productName] = {};
+            returns[productName][regresado.fecha] = regresado.cantidad;
+          });
+
+          return returns;
+        } catch (error) {
+          console.error('Error al cargar regresados:', error);
+          return {};
+        }
+      }
+
+      async setReturnQuantity(cafeteriaId, productoId, fecha, cantidad) {
+        if (!this.useSupabase) return;
+
+        try {
+          const { error } = await supabaseClient
+            .from('regresados')
+            .upsert({
+              cafeteria_id: cafeteriaId,
+              producto_id: productoId,
+              fecha: fecha,
+              cantidad: cantidad
+            }, {
+              onConflict: 'cafeteria_id,producto_id,fecha'
+            });
+
+          if (error) throw error;
+        } catch (error) {
+          console.error('Error al guardar regresados:', error);
+        }
+      }
+
+      // ============================================
+      // MÉTODOS LOCALES (FALLBACK)
+      // ============================================
+
+      loadLocalClients() {
+        try {
+          const stored = localStorage.getItem(this.storageKey);
+          const data = stored ? JSON.parse(stored) : { clients: [] };
+          return data.clients || [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      saveLocal() {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+      }
+
+      addLocalClient(client) {
+        const data = JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+        if (!data.clients) data.clients = [];
+        data.clients.push(client);
+        localStorage.setItem(this.storageKey, JSON.stringify(data));
+      }
+
+      updateLocalClient(index, client) {
+        const data = JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+        if (data.clients && data.clients[index]) {
+          data.clients[index] = client;
+          localStorage.setItem(this.storageKey, JSON.stringify(data));
+        }
+      }
+
+      deleteLocalClient(index) {
+        const data = JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+        if (data.clients) {
+          data.clients.splice(index, 1);
+          localStorage.setItem(this.storageKey, JSON.stringify(data));
+        }
+      }
+    }
+
+    class OrderManager {
+      static getWeekDays(range) {
+        return range === 'tue-mon' 
+          ? ['Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Lunes']
+          : ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      }
+
+      static getWeekDates(range, weekOffset = 0) {
+        const today = new Date();
+        const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Ajustar por el offset de semanas
+        d.setDate(d.getDate() + (weekOffset * 7));
         
-        const USE_SUPABASE = SUPABASE_URL !== 'TU_SUPABASE_URL';
+        const day = d.getDay();
+        
+        let start, end;
+        if (range === 'tue-mon') {
+          const offset = day >= 2 ? day - 2 : 7 - (2 - day);
+          start = new Date(d);
+          start.setDate(d.getDate() - offset);
+          end = new Date(start);
+          end.setDate(start.getDate() + 6);
+        } else {
+          const offset = day >= 1 ? day - 1 : 6;
+          start = new Date(d);
+          start.setDate(d.getDate() - offset);
+          end = new Date(start);
+          end.setDate(start.getDate() + 5);
+        }
+        
+        return { start, end };
+      }
 
-        // ============================================
-        // DATOS GLOBALES
-        // ============================================
-        let cafeterias = [];
-        let currentCafeteria = null;
-        let currentWeekOffset = 0;
+      static formatDate(date) {
+        const months = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+        const day = date.getDate();
+        const month = months[date.getMonth()];
+        return `${day} ${month}`;
+      }
 
-        // ============================================
-        // UTILIDADES DE FECHA
-        // ============================================
-        const DateUtils = {
-            getWeekDates(range, weekOffset = 0) {
-                const today = new Date();
-                const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                d.setDate(d.getDate() + (weekOffset * 7));
-                const day = d.getDay();
-                
-                let start, end;
-                if (range === 'tue-mon') {
-                    const offset = day >= 2 ? day - 2 : 7 - (2 - day);
-                    start = new Date(d);
-                    start.setDate(d.getDate() - offset);
-                    end = new Date(start);
-                    end.setDate(start.getDate() + 6);
-                } else {
-                    const offset = day >= 1 ? day - 1 : 6;
-                    start = new Date(d);
-                    start.setDate(d.getDate() - offset);
-                    end = new Date(start);
-                    end.setDate(start.getDate() + 5);
-                }
-                
-                return { start, end };
-            },
+      static formatDateWithDay(date) {
+        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const dayName = days[date.getDay()];
+        const dayNum = date.getDate();
+        const month = months[date.getMonth()];
+        return `${dayName} ${dayNum} ${month}`;
+      }
 
-            getWeekDays(range) {
-                return range === 'tue-mon' 
-                    ? ['Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Lunes']
-                    : ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-            },
+      static getWeekDatesArray(range, weekOffset = 0) {
+        const { start } = this.getWeekDates(range, weekOffset);
+        const dates = [];
+        const numDays = range === 'tue-mon' ? 6 : 6;
+        
+        for (let i = 0; i <= numDays; i++) {
+          const date = new Date(start);
+          date.setDate(start.getDate() + i);
+          dates.push(date);
+        }
+        
+        return dates;
+      }
 
-            formatDate(date) {
-                const day = date.getDate();
-                const month = date.getMonth() + 1;
-                const year = date.getFullYear();
-                return `${day}/${month}/${year}`;
-            },
+      static initWeekStructure(client) {
+        const { start, end } = this.getWeekDates(client.weekRange);
+        const weekKey = `${this.formatDate(start)}_${this.formatDate(end)}`;
+        
+        if (!client.currentWeek || client.currentWeek.key !== weekKey) {
+          client.currentWeek = {
+            key: weekKey,
+            start: this.formatDate(start),
+            end: this.formatDate(end),
+            data: {}
+          };
+        }
 
-            getWeekDatesArray(range, weekOffset = 0) {
-                const { start } = this.getWeekDates(range, weekOffset);
-                const dates = [];
-                const numDays = range === 'tue-mon' ? 6 : 5;
-                
-                for (let i = 0; i <= numDays; i++) {
-                    const date = new Date(start);
-                    date.setDate(start.getDate() + i);
-                    dates.push(date);
-                }
-                
-                return dates;
+        const days = this.getWeekDays(client.weekRange);
+        client.products.forEach(product => {
+          if (!client.currentWeek.data[product.name]) {
+            client.currentWeek.data[product.name] = { weeklyReturned: 0 };
+          }
+          days.forEach(day => {
+            if (!client.currentWeek.data[product.name][day]) {
+              client.currentWeek.data[product.name][day] = 0;
             }
+          });
+        });
+
+        return client;
+      }
+
+      static calculateTotals(client) {
+        const days = this.getWeekDays(client.weekRange);
+        let gross = 0;
+        let returns = 0;
+
+        client.products.forEach(product => {
+          days.forEach(day => {
+            const qty = client.currentWeek.data[product.name][day] || 0;
+            gross += qty * product.price;
+          });
+
+          const isReturnable = client.allowReturns && 
+            (product.name.toLowerCase() === 'croissant' || 
+             product.name.toLowerCase() === 'chocolatín');
+          
+          if (isReturnable) {
+            const returnsData = client.currentWeek.data[product.name].returns || {};
+            days.forEach(day => {
+              const returnQty = returnsData[day] || 0;
+              returns += returnQty * product.price;
+            });
+          }
+        });
+
+        return {
+          gross,
+          returns,
+          net: Math.max(0, gross - returns)
+        };
+      }
+    }
+
+    class App {
+      constructor() {
+        this.store = new SupabaseStore();
+        this.tempProducts = [];
+        this.editingClientIndex = null;
+        this.currentClientIndex = null;
+        this.currentClient = null;
+        this.currentOrders = {};
+        this.currentReturns = {};
+        this.weekOffset = 0; // Offset de semanas (0 = semana actual, -1 = semana anterior, +1 = siguiente)
+        this.init();
+      }
+
+      async init() {
+        await this.renderClients();
+        this.setupEventListeners();
+        this.loadGlobalDates();
+        this.showView('clientsView');
+        this.updateConnectionStatus();
+        
+        // Inicializar y cargar dashboard
+        await this.loadDashboardData();
+      }
+
+      updateConnectionStatus() {
+        const status = document.getElementById('connectionStatus');
+        if (USE_SUPABASE) {
+          status.textContent = '✅ Supabase';
+          status.style.background = 'rgba(52, 199, 89, 0.1)';
+          status.style.color = 'var(--success)';
+        } else {
+          status.textContent = '💾 Local';
+          status.style.background = 'rgba(255, 149, 0, 0.1)';
+          status.style.color = 'var(--warning)';
+        }
+      }
+
+      showView(viewId) {
+        // Detener actualización automática de tablet si se cambia de vista
+        if (this.tabletRefreshInterval) {
+          clearInterval(this.tabletRefreshInterval);
+          this.tabletRefreshInterval = null;
+        }
+
+        document.querySelectorAll('.view').forEach(view => {
+          view.classList.remove('active');
+        });
+        document.getElementById(viewId).classList.add('active');
+        window.scrollTo(0, 0);
+        
+        // Ocultar header si no estamos en clientsView (dashboard)
+        const header = document.querySelector('header');
+        if (viewId === 'clientsView') {
+          header.classList.remove('hidden');
+        } else {
+          header.classList.add('hidden');
+        }
+      }
+
+      async showDashboard() {
+        this.showView('clientsView');
+        await this.loadDashboardData();
+      }
+
+      async loadDashboardData() {
+        const startDate = document.getElementById('dashboardStartDate').value;
+        const endDate = document.getElementById('dashboardEndDate').value;
+        
+        if (!startDate || !endDate) {
+          // Inicializar con últimos 7 días si no hay fechas
+          const today = new Date();
+          const weekAgo = new Date(today);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          document.getElementById('dashboardStartDate').value = weekAgo.toISOString().split('T')[0];
+          document.getElementById('dashboardEndDate').value = today.toISOString().split('T')[0];
+          return this.loadDashboardData();
+        }
+
+        const clients = await this.store.getClients();
+        const grid = document.getElementById('dashboardGrid');
+        
+        if (clients.length === 0) {
+          grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No hay cafeterías registradas</p>';
+          return;
+        }
+
+        let totalVendidos = 0;
+        let totalRegresados = 0;
+        const productoStats = {};
+
+        for (const client of clients) {
+          const orders = await this.store.getOrders(client.id, startDate, endDate) || {};
+          const returns = await this.store.getReturns(client.id, startDate, endDate) || {};
+
+          // Contar vendidos (orders es un objeto: {productName: {fecha: cantidad}})
+          Object.keys(orders).forEach(productName => {
+            const dates = orders[productName];
+            Object.keys(dates).forEach(fecha => {
+              const cantidad = dates[fecha];
+              totalVendidos += cantidad;
+              
+              const productKey = `${client.id}-${productName}`;
+              if (!productoStats[productKey]) {
+                productoStats[productKey] = {
+                  nombre: productName,
+                  cafeteria: client.name,
+                  vendidos: 0,
+                  regresados: 0
+                };
+              }
+              productoStats[productKey].vendidos += cantidad;
+            });
+          });
+
+          // Contar regresados (returns es un objeto: {productName: {fecha: cantidad}})
+          Object.keys(returns).forEach(productName => {
+            const dates = returns[productName];
+            Object.keys(dates).forEach(fecha => {
+              const cantidad = dates[fecha];
+              totalRegresados += cantidad;
+              
+              const productKey = `${client.id}-${productName}`;
+              if (!productoStats[productKey]) {
+                productoStats[productKey] = {
+                  nombre: productName,
+                  cafeteria: client.name,
+                  vendidos: 0,
+                  regresados: 0
+                };
+              }
+              productoStats[productKey].regresados += cantidad;
+            });
+          });
+        }
+
+        // Renderizar tarjetas por producto
+        let html = '';
+        
+        // Agregar tarjetas por producto
+        Object.keys(productoStats).forEach(prodKey => {
+          const stat = productoStats[prodKey];
+          const neto = stat.vendidos - stat.regresados;
+          html += `
+            <div class="dashboard-card">
+              <div class="dashboard-card-icon">🥐</div>
+              <div class="dashboard-card-title">${stat.nombre}</div>
+              <div class="dashboard-card-value">${stat.vendidos}</div>
+              <div class="dashboard-card-subtitle">${stat.cafeteria} · ${stat.regresados} regresados · ${neto} neto</div>
+            </div>
+          `;
+        });
+
+        if (html === '') {
+          html = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No hay datos en el rango seleccionado</p>';
+        }
+
+        grid.innerHTML = html;
+      }
+
+      setupEventListeners() {
+        document.getElementById('clientForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.saveClient();
+        });
+        
+        document.getElementById('globalDateStart').addEventListener('change', () => {
+          this.saveGlobalDates();
+        });
+        
+        document.getElementById('globalDateEnd').addEventListener('change', () => {
+          this.saveGlobalDates();
+        });
+      }
+
+      loadGlobalDates() {
+        const globalRange = this.store.data.globalDateRange || {};
+        if (globalRange.start) {
+          document.getElementById('globalDateStart').value = globalRange.start;
+        }
+        if (globalRange.end) {
+          document.getElementById('globalDateEnd').value = globalRange.end;
+        }
+      }
+
+      saveGlobalDates() {
+        this.store.data.globalDateRange = {
+          start: document.getElementById('globalDateStart').value,
+          end: document.getElementById('globalDateEnd').value
+        };
+        this.store.save();
+      }
+
+      getContrastColor(hexColor) {
+        // Convertir hex a RGB
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        // Calcular luminancia
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        // Retornar blanco o negro según luminancia
+        return luminance > 0.5 ? '#1d1d1f' : '#ffffff';
+      }
+
+      async renderClients() {
+        const clients = await this.store.getClients();
+        const sidebar = document.getElementById('sidebarCafes');
+        const empty = document.getElementById('emptyState');
+
+        // Mantener el header del sidebar y el botón de inicio
+        const header = sidebar.querySelector('.sidebar-header');
+        const homeButton = sidebar.querySelector('button[onclick="app.showDashboard()"]');
+
+        if (clients.length === 0) {
+          sidebar.innerHTML = '';
+          if (header) sidebar.appendChild(header);
+          if (homeButton) sidebar.appendChild(homeButton);
+          sidebar.innerHTML += `
+            <button class="add-cafe-btn" onclick="app.showClientModal()">
+              ➕ Nueva Cafetería
+            </button>
+          `;
+          if (empty) empty.classList.remove('hidden');
+          return;
+        }
+
+        if (empty) empty.classList.add('hidden');
+        
+        let html = '';
+        if (header) html = header.outerHTML;
+        if (homeButton) html += homeButton.outerHTML;
+        
+        html += clients.map((client, index) => {
+          const bgColor = client.color || '#5ac8fa';
+          const textColor = this.getContrastColor(bgColor);
+          return `
+            <button class="cafe-button" style="background: ${bgColor}; color: ${textColor};" onclick="app.openOrders(${index})">
+              <span>${client.name}</span>
+            </button>
+          `;
+        }).join('');
+        
+        html += `
+          <button class="add-cafe-btn" onclick="app.showClientModal()">
+            ➕ Nueva Cafetería
+          </button>
+        `;
+        
+        sidebar.innerHTML = html;
+      }
+
+      async showClientModal(editIndex = null) {
+        this.editingClientIndex = editIndex;
+        this.tempProducts = [];
+
+        if (editIndex !== null) {
+          // MODO EDICIÓN
+          const clients = await this.store.getClients();
+          const client = clients[editIndex];
+          document.getElementById('clientModalTitle').textContent = 'Editar Cafetería';
+          document.getElementById('clientName').value = client.name;
+          document.getElementById('clientColor').value = client.color || '#5ac8fa';
+          document.getElementById('weekRange').value = client.weekRange;
+          document.getElementById('weekRange').disabled = true;
+          document.getElementById('weekRange').style.opacity = '0.6';
+          document.getElementById('weekRange').style.cursor = 'not-allowed';
+          document.getElementById('allowReturns').value = client.allowReturns ? 'true' : 'false';
+          this.tempProducts = [...client.products];
+        } else {
+          // MODO CREACIÓN
+          document.getElementById('clientModalTitle').textContent = 'Nueva Cafetería';
+          document.getElementById('clientName').value = '';
+          document.getElementById('clientColor').value = '#5ac8fa';
+          document.getElementById('weekRange').value = 'mon-sat';
+          document.getElementById('weekRange').disabled = false;
+          document.getElementById('weekRange').style.opacity = '1';
+          document.getElementById('weekRange').style.cursor = 'pointer';
+          document.getElementById('allowReturns').value = 'false';
+          document.getElementById('productName').value = '';
+          document.getElementById('productPrice').value = '';
+          this.tempProducts = [];
+        }
+
+        this.renderProductsList();
+        this.openModal('clientModal');
+      }
+
+      editClient(index) {
+        this.showClientModal(index);
+      }
+
+      async deleteClient(index) {
+        const clients = await this.store.getClients();
+        const client = clients[index];
+        if (confirm(`¿Eliminar "${client.name}"? Esta acción no se puede deshacer.`)) {
+          await this.store.deleteClient(index);
+          await this.renderClients();
+        }
+      }
+
+      addProduct() {
+        const name = document.getElementById('productName').value.trim();
+        const price = parseFloat(document.getElementById('productPrice').value);
+
+        if (!name || !price || price < 0) {
+          alert('Ingresa nombre y precio válido');
+          return;
+        }
+
+        this.tempProducts.push({ name, price });
+        document.getElementById('productName').value = '';
+        document.getElementById('productPrice').value = '';
+        this.renderProductsList();
+      }
+
+      removeProduct(index) {
+        this.tempProducts.splice(index, 1);
+        this.renderProductsList();
+      }
+
+      renderProductsList() {
+        const container = document.getElementById('productsList');
+        
+        if (this.tempProducts.length === 0) {
+          container.innerHTML = '<div class="text-secondary text-center">Sin productos</div>';
+          return;
+        }
+
+        container.innerHTML = this.tempProducts.map((product, index) => `
+          <div class="product-item">
+            <div class="product-name">${product.name}</div>
+            <div class="product-price">$${product.price.toFixed(2)}</div>
+            <button class="icon-btn" onclick="app.removeProduct(${index})">🗑️</button>
+          </div>
+        `).join('');
+      }
+
+      async saveClient() {
+        const name = document.getElementById('clientName').value.trim();
+        const color = document.getElementById('clientColor').value;
+        const weekRange = document.getElementById('weekRange').value;
+        const allowReturns = document.getElementById('allowReturns').value === 'true';
+
+        if (!name || this.tempProducts.length === 0) {
+          alert('Completa todos los campos y agrega al menos un producto');
+          return;
+        }
+
+        const client = {
+          name,
+          color,
+          weekRange,
+          allowReturns,
+          products: this.tempProducts,
+          currentWeek: null,
+          history: []
         };
 
-        // ============================================
-        // CARGAR CAFETERÍAS
-        // ============================================
-        async function loadCafeterias() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('cafeterias')
-                    .select(`
-                        *,
-                        productos (*)
-                    `)
-                    .order('created_at', { ascending: true });
+        if (this.editingClientIndex !== null) {
+          const clients = await this.store.getClients();
+          const existing = clients[this.editingClientIndex];
+          client.id = existing.id;
+          client.currentWeek = existing.currentWeek;
+          client.history = existing.history || [];
+          client.weekRange = existing.weekRange;
+          await this.store.updateClient(this.editingClientIndex, client);
+        } else {
+          await this.store.addClient(client);
+        }
 
-                if (error) throw error;
+        this.closeModal('clientModal');
+        await this.renderClients();
+      }
 
-                cafeterias = data.map((cafe, index) => ({
-                    id: cafe.id,
-                    nombre: cafe.nombre,
-                    rangoSemana: cafe.rango_semana,
-                    permiteRegresados: cafe.permite_regresados,
-                    productos: cafe.productos.map(p => ({
-                        id: p.id,
-                        nombre: p.nombre,
-                        precio: p.precio
-                    })),
-                    color: `color-${(index % 8) + 1}`,
-                    customDateRange: null // Almacena rango personalizado por cafetería
-                }));
+      async changeWeek(direction) {
+        this.weekOffset += direction;
+        await this.openOrders(this.currentClientIndex);
+      }
 
-                renderSidebar();
-                
-                if (cafeterias.length > 0) {
-                    selectCafeteria(cafeterias[0]);
-                } else {
-                    showEmptyState();
-                }
-            } catch (error) {
-                console.error('Error al cargar cafeterías:', error);
-                showEmptyState();
+      resetToCurrentWeek() {
+        this.weekOffset = 0;
+        this.openOrders(this.currentClientIndex);
+      }
+
+      async openOrders(index) {
+        this.currentClientIndex = index;
+        const clients = await this.store.getClients();
+        let client = clients[index];
+        this.currentClient = client;
+        
+        // Si es la primera vez que abrimos esta cafetería, resetear offset
+        if (this.currentClientIndex !== index) {
+          this.weekOffset = 0;
+        }
+        
+        // Inicializar estructura de semana
+        client = OrderManager.initWeekStructure(client);
+        
+        // Cargar pedidos y regresados de Supabase si está disponible
+        if (USE_SUPABASE && client.id) {
+          const { start, end } = OrderManager.getWeekDates(client.weekRange, this.weekOffset);
+          const startStr = start.toISOString().split('T')[0];
+          const endStr = end.toISOString().split('T')[0];
+          
+          this.currentOrders = await this.store.getOrders(client.id, startStr, endStr);
+          this.currentReturns = await this.store.getReturns(client.id, startStr, endStr);
+          
+          // Merge datos de Supabase con estructura local
+          this.mergeSupabaseData(client);
+        }
+
+        // Detectar tipo de dispositivo y mostrar vista apropiada
+        const deviceType = DeviceDetector.getDeviceType();
+        
+        if (deviceType === 'mobile') {
+          this.openMobileOrderView(index, client);
+        } else if (deviceType === 'tablet') {
+          this.openTabletReadonlyView(index, client);
+        } else {
+          this.openDesktopOrderView(index, client);
+        }
+      }
+
+      mergeSupabaseData(client) {
+        // Merge pedidos desde Supabase
+        Object.keys(this.currentOrders).forEach(productName => {
+          if (!client.currentWeek.data[productName]) {
+            client.currentWeek.data[productName] = {};
+          }
+          Object.keys(this.currentOrders[productName]).forEach(fecha => {
+            const day = this.convertDateToDay(fecha, client.weekRange);
+            if (day) {
+              client.currentWeek.data[productName][day] = this.currentOrders[productName][fecha];
             }
-        }
-
-        // ============================================
-        // RENDERIZAR SIDEBAR
-        // ============================================
-        function renderSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            
-            if (cafeterias.length === 0) {
-                sidebar.innerHTML = '<p style="text-align: center; color: #86868b;">No hay cafeterías</p>';
-                return;
-            }
-
-            sidebar.innerHTML = cafeterias.map(cafe => `
-                <button class="cafe-button ${cafe.color}" 
-                        onclick="selectCafeteria(cafeterias.find(c => c.id === '${cafe.id}'))">
-                    ${cafe.nombre}
-                </button>
-            `).join('');
-        }
-
-        // ============================================
-        // SELECCIONAR CAFETERÍA
-        // ============================================
-        async function selectCafeteria(cafe) {
-            currentCafeteria = cafe;
-            
-            // Actualizar botones activos
-            document.querySelectorAll('.cafe-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event?.target?.classList.add('active');
-
-            // Restaurar offset o rango personalizado
-            if (cafe.customDateRange) {
-                document.getElementById('startDate').value = cafe.customDateRange.start;
-                document.getElementById('endDate').value = cafe.customDateRange.end;
-            } else {
-                // Usar semana actual
-                const { start, end } = DateUtils.getWeekDates(cafe.rangoSemana, currentWeekOffset);
-                document.getElementById('startDate').value = start.toISOString().split('T')[0];
-                document.getElementById('endDate').value = end.toISOString().split('T')[0];
-            }
-
-            // Cargar datos
-            await loadCafeteriaData();
-        }
-
-        // ============================================
-        // CARGAR DATOS DE CAFETERÍA
-        // ============================================
-        async function loadCafeteriaData() {
-            if (!currentCafeteria) return;
-
-            const startStr = document.getElementById('startDate').value;
-            const endStr = document.getElementById('endDate').value;
-
-            if (!startStr || !endStr) return;
-
-            const start = new Date(startStr + 'T00:00:00');
-            const end = new Date(endStr + 'T00:00:00');
-
-            document.getElementById('dateRange').textContent = 
-                `Rango fechas ${DateUtils.formatDate(start)} a ${DateUtils.formatDate(end)}`;
-
-            try {
-                // Cargar pedidos
-                const { data: pedidos, error } = await supabaseClient
-                    .from('pedidos')
-                    .select(`
-                        *,
-                        productos (id, nombre, precio)
-                    `)
-                    .eq('cafeteria_id', currentCafeteria.id)
-                    .gte('fecha', startStr)
-                    .lte('fecha', endStr);
-
-                if (error) throw error;
-
-                renderTable(pedidos || [], start, end);
-            } catch (error) {
-                console.error('Error al cargar pedidos:', error);
-                renderTable([], start, end);
-            }
-        }
-
-        // ============================================
-        // RENDERIZAR TABLA
-        // ============================================
-        function renderTable(pedidos, startDate, endDate) {
-            // Generar array de fechas entre start y end
-            const dates = [];
-            const current = new Date(startDate);
-            while (current <= endDate) {
-                dates.push(new Date(current));
-                current.setDate(current.getDate() + 1);
-            }
-
-            // Organizar pedidos por producto y fecha
-            const pedidosMap = {};
-            pedidos.forEach(pedido => {
-                const productName = pedido.productos.nombre;
-                if (!pedidosMap[productName]) {
-                    pedidosMap[productName] = {};
-                }
-                pedidosMap[productName][pedido.fecha] = pedido.cantidad;
-            });
-
-            let html = '<table>';
-            
-            // Encabezado con días de la semana
-            html += '<thead><tr>';
-            html += '<th></th>';
-            dates.forEach(date => {
-                const dayName = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][date.getDay()];
-                html += `<th>${dayName}<br>${date.getDate()}/${date.getMonth() + 1}</th>`;
-            });
-            html += '</tr></thead>';
-
-            // Cuerpo
-            html += '<tbody>';
-            currentCafeteria.productos.forEach(producto => {
-                html += '<tr>';
-                html += `<td>${producto.nombre}</td>`;
-                
-                dates.forEach(date => {
-                    const dateStr = date.toISOString().split('T')[0];
-                    const cantidad = pedidosMap[producto.nombre]?.[dateStr] || '';
-                    html += `<td>`;
-                    if (cantidad) {
-                        html += `<span class="number-circle">${cantidad}</span>`;
-                    }
-                    html += `</td>`;
-                });
-                
-                html += '</tr>';
-            });
-            html += '</tbody>';
-            
-            html += '</table>';
-
-            document.getElementById('tableContainer').innerHTML = html;
-        }
-
-        // ============================================
-        // CONTROL DE FECHAS
-        // ============================================
-        function updateDateRange() {
-            if (!currentCafeteria) return;
-            
-            const startStr = document.getElementById('startDate').value;
-            const endStr = document.getElementById('endDate').value;
-            
-            if (!startStr || !endStr) return;
-            
-            // Guardar rango personalizado para esta cafetería
-            currentCafeteria.customDateRange = { start: startStr, end: endStr };
-            
-            loadCafeteriaData();
-        }
-
-        function changeWeek(direction) {
-            const startInput = document.getElementById('startDate');
-            const endInput = document.getElementById('endDate');
-            
-            const currentStart = new Date(startInput.value + 'T00:00:00');
-            const currentEnd = new Date(endInput.value + 'T00:00:00');
-            
-            currentStart.setDate(currentStart.getDate() + (direction * 7));
-            currentEnd.setDate(currentEnd.getDate() + (direction * 7));
-            
-            startInput.value = currentStart.toISOString().split('T')[0];
-            endInput.value = currentEnd.toISOString().split('T')[0];
-            
-            updateDateRange();
-        }
-
-        function resetToCurrentWeek() {
-            if (!currentCafeteria) return;
-            
-            const { start, end } = DateUtils.getWeekDates(currentCafeteria.rangoSemana, 0);
-            document.getElementById('startDate').value = start.toISOString().split('T')[0];
-            document.getElementById('endDate').value = end.toISOString().split('T')[0];
-            
-            currentCafeteria.customDateRange = null;
-            updateDateRange();
-        }
-
-        // ============================================
-        // ESTADO VACÍO
-        // ============================================
-        function showEmptyState() {
-            document.getElementById('tableContainer').innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <h3>No hay cafeterías</h3>
-                    <p>Crea cafeterías desde la aplicación principal</p>
-                </div>
-            `;
-        }
-
-        // ============================================
-        // EXPORTAR A PNG
-        // ============================================
-        async function exportToPNG() {
-            if (!currentCafeteria) {
-                alert('Selecciona una cafetería primero');
-                return;
-            }
-
-            const tableContainer = document.getElementById('tableContainer');
-            const canvas = await html2canvas(tableContainer, {
-                scale: 2,
-                backgroundColor: '#ffffff'
-            });
-
-            const startStr = document.getElementById('startDate').value;
-            const endStr = document.getElementById('endDate').value;
-            const start = new Date(startStr + 'T00:00:00');
-            const end = new Date(endStr + 'T00:00:00');
-            const filename = `${currentCafeteria.nombre} ${DateUtils.formatDate(start)}-${DateUtils.formatDate(end)}.png`;
-
-            const link = document.createElement('a');
-            link.download = filename;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }
-
-        // ============================================
-        // INICIALIZAR
-        // ============================================
-        window.addEventListener('DOMContentLoaded', () => {
-            loadCafeterias();
+          });
         });
-    </script>
+
+        // Merge regresados desde Supabase
+        Object.keys(this.currentReturns).forEach(productName => {
+          if (!client.currentWeek.data[productName]) {
+            client.currentWeek.data[productName] = {};
+          }
+          if (!client.currentWeek.data[productName].returns) {
+            client.currentWeek.data[productName].returns = {};
+          }
+          Object.keys(this.currentReturns[productName]).forEach(fecha => {
+            const day = this.convertDateToDay(fecha, client.weekRange);
+            if (day) {
+              client.currentWeek.data[productName].returns[day] = this.currentReturns[productName][fecha];
+            }
+          });
+        });
+      }
+
+      convertDateToDay(fecha, weekRange) {
+        const date = new Date(fecha + 'T00:00:00');
+        const dayOfWeek = date.getDay();
+        const days = OrderManager.getWeekDays(weekRange);
+        
+        if (weekRange === 'tue-mon') {
+          const map = { 2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 1: 5 };
+          return days[map[dayOfWeek]];
+        } else {
+          const map = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5 };
+          return days[map[dayOfWeek]];
+        }
+      }
+
+      convertDayToDate(day, weekRange) {
+        const { start } = OrderManager.getWeekDates(weekRange, this.weekOffset);
+        const days = OrderManager.getWeekDays(weekRange);
+        const dayIndex = days.indexOf(day);
+        
+        if (dayIndex === -1) return null;
+        
+        const date = new Date(start);
+        date.setDate(start.getDate() + dayIndex);
+        return date.toISOString().split('T')[0];
+      }
+
+      openMobileOrderView(index, client) {
+        this.showView('mobileOrderView');
+        
+        // Configurar título con fecha actual
+        const today = new Date();
+        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        const dateStr = today.toLocaleDateString('es-ES', options);
+        document.getElementById('mobileDateTitle').textContent = 
+          dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+        document.getElementById('mobileCafeName').textContent = client.name;
+
+        // Renderizar lista de productos
+        const container = document.getElementById('mobileProductsList');
+        const dayName = today.toLocaleDateString('es-ES', { weekday: 'long' });
+        const dayCapitalized = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+
+        container.innerHTML = client.products.map((product, idx) => {
+          const isChecked = client.currentWeek.data[product.name][dayCapitalized] > 0;
+          return `
+            <div class="mobile-product-item ${isChecked ? 'checked' : ''}" 
+                 data-product="${product.name}"
+                 data-day="${dayCapitalized}">
+              <div class="mobile-product-name">${product.name}</div>
+              <div class="mobile-checkbox ${isChecked ? 'checked' : ''}"
+                   onclick="app.toggleMobileProduct('${product.name}', '${dayCapitalized}')">
+                <span class="mobile-checkbox-icon">✓</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      toggleMobileProduct(productName, day) {
+        const client = this.store.getClients()[this.currentClientIndex];
+        const currentValue = client.currentWeek.data[productName][day] || 0;
+        
+        // Toggle: si es 0, lo pone en 1; si es > 0, lo pone en 0
+        client.currentWeek.data[productName][day] = currentValue > 0 ? 0 : 1;
+        
+        this.store.updateClient(this.currentClientIndex, client);
+        
+        // Actualizar UI
+        const item = document.querySelector(`[data-product="${productName}"][data-day="${day}"]`);
+        const checkbox = item.querySelector('.mobile-checkbox');
+        
+        if (currentValue > 0) {
+          item.classList.remove('checked');
+          checkbox.classList.remove('checked');
+        } else {
+          item.classList.add('checked');
+          checkbox.classList.add('checked');
+        }
+
+        // Mostrar indicador de sincronización
+        this.showSyncIndicator();
+      }
+
+      showSyncIndicator() {
+        const indicator = document.getElementById('mobileSyncIndicator');
+        indicator.classList.add('show');
+        setTimeout(() => {
+          indicator.classList.remove('show');
+        }, 2000);
+      }
+
+      openTabletReadonlyView(index, client) {
+        this.showView('tabletReadonlyView');
+        
+        document.getElementById('tabletClientName').textContent = client.name;
+        
+        let startDate, endDate;
+        if (client.customDateRange && client.customDateRange.start && client.customDateRange.end) {
+          startDate = new Date(client.customDateRange.start + 'T00:00:00');
+          endDate = new Date(client.customDateRange.end + 'T00:00:00');
+          document.getElementById('tabletWeekRange').textContent = 
+            `${OrderManager.formatDate(startDate)} - ${OrderManager.formatDate(endDate)}`;
+        } else {
+          const { start, end } = OrderManager.getWeekDates(client.weekRange);
+          startDate = start;
+          endDate = end;
+          document.getElementById('tabletWeekRange').textContent = 
+            `${OrderManager.formatDate(start)} - ${OrderManager.formatDate(end)}`;
+        }
+
+        this.renderTabletTable(client);
+        this.updateTabletTotals(client);
+
+        // Auto-actualizar cada 3 segundos
+        if (this.tabletRefreshInterval) {
+          clearInterval(this.tabletRefreshInterval);
+        }
+        this.tabletRefreshInterval = setInterval(() => {
+          const updatedClient = this.store.getClients()[this.currentClientIndex];
+          this.renderTabletTable(updatedClient);
+          this.updateTabletTotals(updatedClient);
+        }, 3000);
+      }
+
+      renderTabletTable(client) {
+        const days = OrderManager.getWeekDays(client.weekRange);
+        const thead = document.getElementById('tabletOrdersTableHead');
+        const tbody = document.getElementById('tabletOrdersTableBody');
+
+        thead.innerHTML = `
+          <tr>
+            <th>Producto</th>
+            ${days.map(d => `<th>${d}</th>`).join('')}
+            <th>Total</th>
+          </tr>
+        `;
+
+        let html = '';
+        client.products.forEach(product => {
+          const productData = client.currentWeek.data[product.name];
+          let weekTotal = 0;
+
+          html += '<tr>';
+          html += `<td><strong>${product.name}</strong></td>`;
+          
+          days.forEach(day => {
+            const qty = productData[day] || 0;
+            weekTotal += qty;
+            html += `<td><strong>${qty || '—'}</strong></td>`;
+          });
+
+          html += `<td><strong>${weekTotal}</strong></td>`;
+          html += '</tr>';
+        });
+
+        tbody.innerHTML = html;
+      }
+
+      updateTabletTotals(client) {
+        const totals = OrderManager.calculateTotals(client);
+        document.getElementById('tabletGrossTotal').textContent = `$${totals.gross.toFixed(2)}`;
+        document.getElementById('tabletReturnsTotal').textContent = `$${totals.returns.toFixed(2)}`;
+        document.getElementById('tabletNetTotal').textContent = `$${totals.net.toFixed(2)}`;
+      }
+
+      openDesktopOrderView(index, client) {
+        this.showView('ordersView');
+        
+        document.getElementById('ordersClientName').textContent = client.name;
+        
+        const { start, end } = OrderManager.getWeekDates(client.weekRange, this.weekOffset);
+        document.getElementById('ordersWeekRange').textContent = 
+          `${OrderManager.formatDate(start)} - ${OrderManager.formatDate(end)}`;
+        
+        // Indicador de semana
+        if (this.weekOffset !== 0) {
+          const weekText = this.weekOffset < 0 ? `${Math.abs(this.weekOffset)} sem. atrás` : `${this.weekOffset} sem. adelante`;
+          document.getElementById('ordersWeekRange').textContent += ` (${weekText})`;
+        }
+
+        const dateStartInput = document.getElementById('customDateStart');
+        const dateEndInput = document.getElementById('customDateEnd');
+        
+        if (client.customDateRange) {
+          dateStartInput.value = client.customDateRange.start || '';
+          dateEndInput.value = client.customDateRange.end || '';
+        } else {
+          dateStartInput.value = '';
+          dateEndInput.value = '';
+        }
+
+        dateStartInput.onchange = () => {
+          if (!client.customDateRange) client.customDateRange = {};
+          client.customDateRange.start = dateStartInput.value;
+          this.store.updateClient(index, client);
+          this.openOrders(index);
+        };
+
+        dateEndInput.onchange = () => {
+          if (!client.customDateRange) client.customDateRange = {};
+          client.customDateRange.end = dateEndInput.value;
+          this.store.updateClient(index, client);
+          this.openOrders(index);
+        };
+
+        this.renderOrdersTable(client);
+        this.updateTotals(client);
+      }
+
+      renderOrdersTable(client) {
+        const days = OrderManager.getWeekDays(client.weekRange);
+        const dates = OrderManager.getWeekDatesArray(client.weekRange, this.weekOffset);
+        const thead = document.getElementById('ordersTableHead');
+        const tbody = document.getElementById('ordersTableBody');
+
+        thead.innerHTML = `
+          <tr>
+            <th>Producto</th>
+            ${days.map((day, idx) => `
+              <th style="min-width: 140px;">
+                <div style="font-size: 11px; color: var(--text-secondary); font-weight: 500; margin-bottom: 2px;">${day}</div>
+                <div style="font-size: 13px; font-weight: 700;">${dates[idx].getDate()} ${OrderManager.formatDate(dates[idx]).split(' ')[1]}</div>
+              </th>
+            `).join('')}
+            <th>Total</th>
+          </tr>
+        `;
+
+        let html = '';
+        client.products.forEach(product => {
+          const productData = client.currentWeek.data[product.name];
+          let weekTotal = 0;
+
+          html += '<tr>';
+          html += `<td><strong>${product.name}</strong></td>`;
+          
+          days.forEach(day => {
+            const qty = productData[day] || 0;
+            weekTotal += qty;
+            html += `
+              <td>
+                <div class="qty-group">
+                  <input type="text" 
+                         class="qty-input" 
+                         value="${qty || ''}"
+                         pattern="[0-9]*"
+                         inputmode="numeric"
+                         placeholder="0"
+                         onchange="app.setQuantity('${product.name}', '${day}', this.value)"
+                         onfocus="this.select()">
+                </div>
+              </td>
+            `;
+          });
+
+          html += `<td><strong>${weekTotal}</strong></td>`;
+          html += '</tr>';
+
+          // FILA DE REGRESADOS DIARIOS (solo para Croissant y Chocolatín)
+          const isReturnable = client.allowReturns && 
+            (product.name.toLowerCase() === 'croissant' || 
+             product.name.toLowerCase() === 'chocolatín');
+
+          if (isReturnable) {
+            const returnsData = productData.returns || {};
+            let totalReturns = 0;
+            
+            html += '<tr style="background: rgba(255,59,48,0.05);">';
+            html += `<td><strong>↩️ Regresados</strong></td>`;
+            
+            days.forEach(day => {
+              const returnQty = returnsData[day] || 0;
+              totalReturns += returnQty;
+              html += `
+                <td>
+                  <div class="qty-group">
+                    <input type="text" 
+                           class="qty-input" 
+                           style="border-color: var(--danger); color: var(--danger);"
+                           value="${returnQty || ''}"
+                           pattern="[0-9]*"
+                           inputmode="numeric"
+                           placeholder="0"
+                           onchange="app.setDailyReturn('${product.name}', '${day}', this.value)"
+                           onfocus="this.select()">
+                  </div>
+                </td>
+              `;
+            });
+
+            html += `<td><strong style="color: var(--danger);">-${totalReturns}</strong></td>`;
+            html += '</tr>';
+          }
+        });
+
+        tbody.innerHTML = html;
+      }
+
+      async setQuantity(productName, day, value) {
+        const client = this.currentClient;
+        const qty = parseInt(value) || 0;
+        client.currentWeek.data[productName][day] = Math.max(0, qty);
+        
+        // Guardar en Supabase si está disponible
+        if (USE_SUPABASE && client.id) {
+          const product = client.products.find(p => p.name === productName);
+          if (product && product.id) {
+            const fecha = this.convertDayToDate(day, client.weekRange);
+            await this.store.setOrderQuantity(client.id, product.id, fecha, qty);
+          }
+        }
+        
+        this.renderOrdersTable(client);
+        this.updateTotals(client);
+      }
+
+      async setDailyReturn(productName, day, value) {
+        const client = this.currentClient;
+        const qty = parseInt(value) || 0;
+        
+        if (!client.currentWeek.data[productName].returns) {
+          client.currentWeek.data[productName].returns = {};
+        }
+        client.currentWeek.data[productName].returns[day] = Math.max(0, qty);
+        
+        // Guardar en Supabase si está disponible
+        if (USE_SUPABASE && client.id) {
+          const product = client.products.find(p => p.name === productName);
+          if (product && product.id) {
+            const fecha = this.convertDayToDate(day, client.weekRange);
+            await this.store.setReturnQuantity(client.id, product.id, fecha, qty);
+          }
+        }
+        
+        this.renderOrdersTable(client);
+        this.updateTotals(client);
+      }
+
+      updateTotals(client) {
+        const { gross, returns, net } = OrderManager.calculateTotals(client);
+        document.getElementById('grossTotal').textContent = `$${gross.toFixed(2)}`;
+        document.getElementById('returnsTotal').textContent = `$${returns.toFixed(2)}`;
+        document.getElementById('netTotal').textContent = `$${net.toFixed(2)}`;
+      }
+
+      resetWeek() {
+        if (!confirm('¿Reiniciar toda la semana? Esta acción no se puede deshacer.')) return;
+
+        const client = this.store.getClients()[this.currentClientIndex];
+        const days = OrderManager.getWeekDays(client.weekRange);
+
+        client.products.forEach(product => {
+          days.forEach(day => {
+            client.currentWeek.data[product.name][day] = 0;
+          });
+          client.currentWeek.data[product.name].weeklyReturned = 0;
+        });
+
+        this.store.updateClient(this.currentClientIndex, client);
+        this.renderOrdersTable(client);
+        this.updateTotals(client);
+      }
+
+      exportWeek() {
+        const client = this.store.getClients()[this.currentClientIndex];
+        
+        let startFormatted, endFormatted;
+        if (client.customDateRange && client.customDateRange.start && client.customDateRange.end) {
+          const startDate = new Date(client.customDateRange.start + 'T00:00:00');
+          const endDate = new Date(client.customDateRange.end + 'T00:00:00');
+          startFormatted = OrderManager.formatDate(startDate);
+          endFormatted = OrderManager.formatDate(endDate);
+        } else {
+          const { start, end } = OrderManager.getWeekDates(client.weekRange);
+          startFormatted = OrderManager.formatDate(start);
+          endFormatted = OrderManager.formatDate(end);
+        }
+        
+        const totals = OrderManager.calculateTotals(client);
+
+        if (!client.history) client.history = [];
+        client.history.push({
+          key: client.currentWeek.key,
+          start: startFormatted,
+          end: endFormatted,
+          totals,
+          data: JSON.parse(JSON.stringify(client.currentWeek.data)),
+          savedAt: new Date().toISOString()
+        });
+
+        this.store.updateClient(this.currentClientIndex, client);
+        alert('✅ Semana guardada en el historial');
+      }
+
+      viewHistory() {
+        const client = this.store.getClients()[this.currentClientIndex];
+        
+        this.showView('historyView');
+        
+        document.getElementById('historyClientName').textContent = `Historial - ${client.name}`;
+        
+        const historyList = document.getElementById('historyList');
+        
+        if (!client.history || client.history.length === 0) {
+          historyList.innerHTML = `
+            <div class="empty-state" style="padding: 40px 20px;">
+              <div class="empty-state-icon">📅</div>
+              <h3>Sin historial</h3>
+              <p>Aún no has guardado ninguna semana</p>
+            </div>
+          `;
+        } else {
+          historyList.innerHTML = client.history.map((week, index) => `
+            <div class="card" style="cursor: default; margin-bottom: 16px;">
+              <div class="card-label">Semana ${client.history.length - index}</div>
+              <div class="card-title">${week.start} - ${week.end}</div>
+              <div style="display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap;">
+                <div>
+                  <div class="text-secondary" style="font-size: 12px; margin-bottom: 4px;">Total Bruto</div>
+                  <div style="font-size: 18px; font-weight: 600; color: var(--text);">$${week.totals.gross.toFixed(2)}</div>
+                </div>
+                <div>
+                  <div class="text-secondary" style="font-size: 12px; margin-bottom: 4px;">Regresados</div>
+                  <div style="font-size: 18px; font-weight: 600; color: var(--danger);">$${week.totals.returns.toFixed(2)}</div>
+                </div>
+                <div>
+                  <div class="text-secondary" style="font-size: 12px; margin-bottom: 4px;">Total Neto</div>
+                  <div style="font-size: 18px; font-weight: 600; color: var(--success);">$${week.totals.net.toFixed(2)}</div>
+                </div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-secondary); margin-top: 8px;">
+                Guardado: ${new Date(week.savedAt).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button class="btn-secondary" style="flex: 1;" onclick="app.downloadWeekImage(${index})">Descargar PNG</button>
+                <button class="btn-danger" onclick="app.deleteHistoryWeek(${index})">Eliminar</button>
+              </div>
+            </div>
+          `).reverse().join('');
+        }
+      }
+
+      async downloadWeekImage(historyIndex) {
+        const client = this.store.getClients()[this.currentClientIndex];
+        const week = client.history[historyIndex];
+        
+        if (!week) return;
+        
+        const canvas = await this.generateClientCanvas(client, week.start, week.end, week.totals, week.data);
+        const imageData = canvas.toDataURL('image/png');
+        
+        const a = document.createElement('a');
+        a.href = imageData;
+        a.download = `${client.name} ${week.start}-${week.end}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      deleteHistoryWeek(historyIndex) {
+        if (!confirm('¿Eliminar esta semana del historial?')) return;
+        
+        const client = this.store.getClients()[this.currentClientIndex];
+        client.history.splice(historyIndex, 1);
+        this.store.updateClient(this.currentClientIndex, client);
+        this.viewHistory();
+      }
+
+      showImportModal() {
+        this.openModal('importModal');
+      }
+
+      importCSV() {
+        const fileInput = document.getElementById('csvFile');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+          alert('Selecciona un archivo CSV');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target.result;
+          this.parseCSV(text);
+        };
+        reader.readAsText(file);
+      }
+
+      parseCSV(text) {
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        const clientsMap = {};
+
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',').map(c => c.trim());
+          const cafeName = cols[0];
+          
+          if (!cafeName) continue;
+
+          if (!clientsMap[cafeName]) {
+            clientsMap[cafeName] = {
+              name: cafeName,
+              weekRange: cols[4] || 'mon-sat',
+              allowReturns: cols[3].toLowerCase() === 'si',
+              products: [],
+              currentWeek: null,
+              history: []
+            };
+          }
+
+          clientsMap[cafeName].products.push({
+            name: cols[1],
+            price: parseFloat(cols[2]) || 0
+          });
+        }
+
+        Object.values(clientsMap).forEach(client => {
+          this.store.addClient(client);
+        });
+
+        this.closeModal('importModal');
+        this.renderClients();
+        alert('✅ CSV importado correctamente');
+      }
+
+      async exportAllPDF() {
+        const clients = this.store.getClients();
+        
+        if (clients.length === 0) {
+          alert('No hay cafeterías para exportar');
+          return;
+        }
+
+        let generalStart, generalEnd;
+        const globalRange = this.store.data.globalDateRange || {};
+        
+        if (globalRange.start && globalRange.end) {
+          generalStart = new Date(globalRange.start + 'T00:00:00');
+          generalEnd = new Date(globalRange.end + 'T00:00:00');
+        } else {
+          const firstClient = clients[0];
+          
+          if (firstClient.customDateRange && firstClient.customDateRange.start && firstClient.customDateRange.end) {
+            generalStart = new Date(firstClient.customDateRange.start + 'T00:00:00');
+            generalEnd = new Date(firstClient.customDateRange.end + 'T00:00:00');
+          } else {
+            const dates = OrderManager.getWeekDates(firstClient.weekRange);
+            generalStart = dates.start;
+            generalEnd = dates.end;
+          }
+        }
+
+        const folderName = `${OrderManager.formatDate(generalStart)}-${OrderManager.formatDate(generalEnd)}`;
+        const zip = new JSZip();
+        const folder = zip.folder(folderName);
+
+        for (let i = 0; i < clients.length; i++) {
+          const client = clients[i];
+          OrderManager.initWeekStructure(client);
+          
+          let clientStart, clientEnd;
+          if (client.customDateRange && client.customDateRange.start && client.customDateRange.end) {
+            clientStart = new Date(client.customDateRange.start + 'T00:00:00');
+            clientEnd = new Date(client.customDateRange.end + 'T00:00:00');
+          } else {
+            const dates = OrderManager.getWeekDates(client.weekRange);
+            clientStart = dates.start;
+            clientEnd = dates.end;
+          }
+
+          const startFormatted = OrderManager.formatDate(clientStart);
+          const endFormatted = OrderManager.formatDate(clientEnd);
+          const totals = OrderManager.calculateTotals(client);
+          
+          const canvas = await this.generateClientCanvas(client, startFormatted, endFormatted, totals);
+          const imageData = canvas.toDataURL('image/png');
+          const base64Data = imageData.split(',')[1];
+          
+          const fileName = `${client.name} ${startFormatted}-${endFormatted}.png`;
+          folder.file(fileName, base64Data, {base64: true});
+        }
+
+        const content = await zip.generateAsync({type: 'blob'});
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${folderName}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert('✅ Carpeta exportada correctamente');
+      }
+
+      async generateClientCanvas(client, startFormatted, endFormatted, totals, customData = null) {
+        const days = OrderManager.getWeekDays(client.weekRange);
+        const data = customData || client.currentWeek.data;
+        
+        const wrapText = (ctx, text, maxWidth) => {
+          const words = text.split(' ');
+          const lines = [];
+          let currentLine = words[0];
+
+          for (let i = 1; i < words.length; i++) {
+            const testLine = currentLine + ' ' + words[i];
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth) {
+              lines.push(currentLine);
+              currentLine = words[i];
+            } else {
+              currentLine = testLine;
+            }
+          }
+          lines.push(currentLine);
+          return lines;
+        };
+        
+        const rows = [];
+        rows.push(['Producto', ...days, 'Total']);
+        
+        client.products.forEach(product => {
+          if (!data[product.name]) return;
+          
+          const row = [product.name];
+          let weekTotal = 0;
+          
+          days.forEach(day => {
+            const qty = data[product.name][day] || 0;
+            row.push(String(qty));
+            weekTotal += qty;
+          });
+          
+          row.push(String(weekTotal));
+          rows.push(row);
+          
+          const isReturnable = client.allowReturns && 
+            (product.name.toLowerCase() === 'croissant' || 
+             product.name.toLowerCase() === 'chocolatín');
+          
+          if (isReturnable) {
+            const returnQty = data[product.name].weeklyReturned || 0;
+            const returnRow = [`Regresados (${product.name})`];
+            days.forEach(() => returnRow.push('—'));
+            returnRow.push(String(returnQty));
+            rows.push(returnRow);
+          }
+        });
+
+        const cellW = 130;
+        const cellH = 55;
+        const cols = rows[0].length;
+        const rowsCount = rows.length;
+        const pad = 30;
+        const headerHeight = 100;
+        const width = pad * 2 + cellW * cols;
+        const height = pad * 2 + headerHeight + cellH * rowsCount;
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = width * 2;
+        canvas.height = height * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.fillStyle = '#1d1d1f';
+        ctx.font = 'bold 22px -apple-system, Arial';
+        ctx.fillText(client.name, pad, pad + 25);
+        
+        ctx.font = '14px -apple-system, Arial';
+        ctx.fillStyle = '#86868b';
+        ctx.fillText(`${startFormatted} a ${endFormatted}`, pad, pad + 50);
+        
+        ctx.fillStyle = '#0a84ff';
+        ctx.font = 'bold 16px -apple-system, Arial';
+        ctx.fillText(`Total Neto: $${totals.net.toFixed(2)}`, pad, pad + 75);
+
+        const tableTop = pad + headerHeight;
+        ctx.textBaseline = 'middle';
+
+        ctx.textAlign = 'center';
+        for (let c = 0; c < cols; c++) {
+          const x = pad + c * cellW;
+          const y = tableTop;
+          
+          ctx.fillStyle = '#f5f5f7';
+          ctx.fillRect(x, y, cellW, cellH);
+          ctx.strokeStyle = '#d2d2d7';
+          ctx.strokeRect(x, y, cellW, cellH);
+          
+          ctx.fillStyle = '#1d1d1f';
+          ctx.font = 'bold 13px -apple-system, Arial';
+          ctx.fillText(rows[0][c], x + cellW / 2, y + cellH / 2);
+        }
+
+        ctx.font = '11px -apple-system, Arial';
+        for (let r = 1; r < rowsCount; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = pad + c * cellW;
+            const y = tableTop + r * cellH;
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x, y, cellW, cellH);
+            ctx.strokeStyle = '#d2d2d7';
+            ctx.strokeRect(x, y, cellW, cellH);
+            
+            ctx.fillStyle = '#1d1d1f';
+            
+            if (c === 0) {
+              ctx.textAlign = 'left';
+              const lines = wrapText(ctx, rows[r][c], cellW - 16);
+              const lineHeight = 14;
+              const totalHeight = lines.length * lineHeight;
+              const startY = y + cellH / 2 - totalHeight / 2 + lineHeight / 2;
+              
+              lines.forEach((line, idx) => {
+                ctx.fillText(line, x + 8, startY + idx * lineHeight);
+              });
+            } else {
+              ctx.textAlign = 'center';
+              ctx.fillText(rows[r][c], x + cellW / 2, y + cellH / 2);
+            }
+          }
+        }
+
+        return canvas;
+      }
+
+      openModal(id) {
+        document.getElementById(id).classList.add('active');
+      }
+
+      closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+      }
+    }
+
+    const app = new App();
+    
+    // Exponer app globalmente para event handlers
+    window.app = app;
+  </script>
 </body>
 </html>
