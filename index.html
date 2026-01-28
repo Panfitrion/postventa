@@ -709,6 +709,7 @@
         flex-direction: row;
         overflow-x: auto;
         padding: 16px;
+        gap: 8px;
       }
 
       .sidebar-header {
@@ -716,8 +717,16 @@
       }
 
       .cafe-button {
-        min-width: 150px;
+        min-width: 160px;
         flex-shrink: 0;
+        padding: 20px;
+        font-size: 20px;
+      }
+
+      .add-cafe-btn {
+        min-width: 160px;
+        padding: 18px;
+        font-size: 18px;
       }
 
       .container {
@@ -738,13 +747,34 @@
 
       .qty-input {
         max-width: 100%;
-        min-height: 64px;
-        font-size: 22px;
-        padding: 18px 12px;
+        min-height: 70px;
+        font-size: 24px;
+        padding: 20px 12px;
       }
 
       button {
-        min-height: 52px;
+        min-height: 56px;
+        font-size: 17px;
+        padding: 14px 24px;
+      }
+
+      .btn-secondary, .btn-primary, .btn-danger, .btn-success {
+        min-height: 56px;
+        font-size: 17px;
+      }
+
+      .dashboard-card {
+        padding: 24px;
+      }
+
+      .dashboard-card-value {
+        font-size: 42px;
+      }
+
+      .view-actions button {
+        padding: 12px 20px;
+        font-size: 15px;
+        min-height: 48px;
       }
     }
 
@@ -759,20 +789,16 @@
       border-radius: var(--radius);
       margin-bottom: 20px;
       box-shadow: var(--shadow);
-      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .mobile-date-title {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--primary);
-      margin-bottom: 8px;
-    }
-
-    .mobile-cafe-name {
-      font-size: 16px;
-      color: var(--text-secondary);
-      font-weight: 600;
+      margin-bottom: 4px;
     }
 
     .mobile-products-list {
@@ -921,6 +947,8 @@
         </div>
       </div>
       <div class="header-actions">
+        <button class="btn-secondary" onclick="app.migrateToSupabase()" style="background: var(--warning); color: white;">🔄 Migrar a Supabase</button>
+        <button class="btn-secondary" onclick="app.clearLocalStorage()" style="background: var(--danger); color: white;">🗑️ Limpiar Local</button>
         <button class="btn-secondary" onclick="app.showImportModal()">📥 Importar CSV</button>
         <button class="btn-secondary" onclick="app.exportAllPDF()">📄 Exportar Todo</button>
         <button class="btn-primary" onclick="app.showClientModal()">➕ Nueva Cafetería</button>
@@ -1034,9 +1062,15 @@
       </button>
 
       <div class="mobile-date-header">
-        <div class="mobile-date-title" id="mobileDateTitle">Miércoles 28 Enero</div>
-        <div class="mobile-cafe-name" id="mobileCafeName">Cafetería</div>
+        <button class="icon-btn" onclick="app.changeMobileDate(-1)" style="width: 48px; height: 48px; font-size: 20px;">←</button>
+        <div style="flex: 1; text-align: center;">
+          <div class="mobile-date-title" id="mobileDateTitle">Miércoles 28 Enero</div>
+          <input type="date" id="mobileDatePicker" onchange="app.updateMobileDate()" style="padding: 12px; font-size: 16px; border: 2px solid var(--border); border-radius: 10px; width: 100%; margin-top: 8px; min-height: 52px;">
+        </div>
+        <button class="icon-btn" onclick="app.changeMobileDate(1)" style="width: 48px; height: 48px; font-size: 20px;">→</button>
       </div>
+
+      <div class="mobile-cafe-name" id="mobileCafeName" style="text-align: center; font-size: 18px; font-weight: 700; color: var(--text); margin: 16px 0; padding: 12px; background: var(--surface); border-radius: 10px;">Cafetería</div>
 
       <div class="mobile-products-list" id="mobileProductsList">
         <!-- Los productos se cargarán dinámicamente aquí -->
@@ -1064,7 +1098,17 @@
       <div class="view-header">
         <div>
           <h2 class="view-title" id="tabletClientName">Cliente</h2>
-          <span class="badge" id="tabletWeekRange">Semana</span>
+          <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
+            <button class="icon-btn" onclick="app.changeTabletWeek(-1)" style="width: 40px; height: 40px; font-size: 18px;" title="Semana anterior">←</button>
+            <div style="display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 10px 16px; border-radius: 10px; border: 2px solid var(--border);">
+              <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Inicio:</label>
+              <input type="date" id="tabletStartDate" onchange="app.updateTabletDateRange()" style="padding: 8px; font-size: 14px; border: 1px solid var(--border); border-radius: 6px; min-height: 40px; width: 150px;">
+              <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-left: 8px;">Fin:</label>
+              <input type="date" id="tabletEndDate" onchange="app.updateTabletDateRange()" style="padding: 8px; font-size: 14px; border: 1px solid var(--border); border-radius: 6px; min-height: 40px; width: 150px;">
+            </div>
+            <button class="icon-btn" onclick="app.changeTabletWeek(1)" style="width: 40px; height: 40px; font-size: 18px;" title="Semana siguiente">→</button>
+            <button class="btn-secondary" onclick="app.resetTabletToCurrentWeek()" style="padding: 10px 16px; min-height: 40px; font-size: 14px;">🗓️ Hoy</button>
+          </div>
         </div>
       </div>
 
@@ -1229,16 +1273,42 @@
         this.clientsCache = [];
       }
 
+      async testConnection() {
+        if (!this.useSupabase) {
+          return false;
+        }
+
+        try {
+          // Hacer una consulta simple para verificar conexión
+          const { error } = await supabaseClient
+            .from('cafeterias')
+            .select('id')
+            .limit(1);
+
+          if (error) {
+            console.error('❌ Error de conexión:', error);
+            return false;
+          }
+
+          return true;
+        } catch (error) {
+          console.error('❌ No se puede conectar a Supabase:', error);
+          return false;
+        }
+      }
+
       // ============================================
       // MÉTODOS DE CAFETERÍAS
       // ============================================
       
       async getClients() {
         if (!this.useSupabase) {
+          console.log('⚠️ Usando localStorage (modo offline)');
           return this.loadLocalClients();
         }
 
         try {
+          // Probar conexión primero
           const { data: cafeterias, error } = await supabaseClient
             .from('cafeterias')
             .select(`
@@ -1247,12 +1317,21 @@
             `)
             .order('created_at', { ascending: true });
 
-          if (error) throw error;
+          if (error) {
+            console.error('❌ Error de Supabase:', error);
+            throw error;
+          }
+
+          if (!cafeterias) {
+            console.log('ℹ️ No hay cafeterías en Supabase, usando localStorage');
+            return this.loadLocalClients();
+          }
 
           // Transformar estructura de Supabase a formato de la app
           this.clientsCache = cafeterias.map(cafe => ({
             id: cafe.id,
             name: cafe.nombre,
+            color: cafe.color || '#5ac8fa',
             weekRange: cafe.rango_semana,
             allowReturns: cafe.permite_regresados,
             products: cafe.productos.map(p => ({
@@ -1264,9 +1343,17 @@
             history: []
           }));
 
+          console.log(`✅ ${this.clientsCache.length} cafeterías cargadas desde Supabase`);
           return this.clientsCache;
         } catch (error) {
-          console.error('Error al cargar cafeterías:', error);
+          console.error('❌ Error al cargar cafeterías:', error);
+          
+          // Si hay error de red o CORS, usar localStorage
+          if (error.message && (error.message.includes('Failed') || error.message.includes('Load failed'))) {
+            console.log('⚠️ Problema de conexión, usando datos locales');
+            alert('⚠️ No se pudo conectar a Supabase.\n\nUsando datos guardados localmente.\n\nVerifica tu conexión a internet.');
+          }
+          
           return this.loadLocalClients();
         }
       }
@@ -1282,6 +1369,7 @@
             .from('cafeterias')
             .insert({
               nombre: client.name,
+              color: client.color || '#5ac8fa',
               rango_semana: client.weekRange,
               permite_regresados: client.allowReturns
             })
@@ -1305,10 +1393,11 @@
             if (prodError) throw prodError;
           }
 
-          console.log('✅ Cafetería creada en Supabase');
+          console.log('✅ Cafetería creada en Supabase:', cafeteria);
           return cafeteria.id;
         } catch (error) {
           console.error('Error al crear cafetería:', error);
+          alert('⚠️ Error al crear cafetería: ' + error.message);
           return this.addLocalClient(client);
         }
       }
@@ -1323,6 +1412,7 @@
             .from('cafeterias')
             .update({
               nombre: client.name,
+              color: client.color || '#5ac8fa',
               permite_regresados: client.allowReturns
             })
             .eq('id', client.id);
@@ -1331,9 +1421,10 @@
 
           // Actualizar productos si cambiaron
           // (Nota: esto es más complejo, simplificado por ahora)
-          console.log('✅ Cafetería actualizada');
+          console.log('✅ Cafetería actualizada en Supabase');
         } catch (error) {
           console.error('Error al actualizar cafetería:', error);
+          alert('⚠️ Error al actualizar cafetería: ' + error.message);
           this.updateLocalClient(index, client);
         }
       }
@@ -2120,60 +2211,92 @@
         return date.toISOString().split('T')[0];
       }
 
-      openMobileOrderView(index, client) {
+      async openMobileOrderView(index, client) {
+        this.currentClientIndex = index;
         this.showView('mobileOrderView');
         
-        // Configurar título con fecha actual
+        // Configurar fecha actual
         const today = new Date();
+        document.getElementById('mobileDatePicker').value = today.toISOString().split('T')[0];
+        document.getElementById('mobileCafeName').textContent = client.name;
+        
+        await this.renderMobileProducts();
+      }
+
+      async updateMobileDate() {
+        await this.renderMobileProducts();
+      }
+
+      async changeMobileDate(direction) {
+        const currentDate = new Date(document.getElementById('mobileDatePicker').value);
+        currentDate.setDate(currentDate.getDate() + direction);
+        document.getElementById('mobileDatePicker').value = currentDate.toISOString().split('T')[0];
+        await this.renderMobileProducts();
+      }
+
+      async renderMobileProducts() {
+        const clients = await this.store.getClients();
+        const client = clients[this.currentClientIndex];
+        const selectedDate = document.getElementById('mobileDatePicker').value;
+        
+        if (!selectedDate) return;
+        
+        // Actualizar título con formato legible
+        const dateObj = new Date(selectedDate + 'T00:00:00');
         const options = { weekday: 'long', day: 'numeric', month: 'long' };
-        const dateStr = today.toLocaleDateString('es-ES', options);
+        const dateStr = dateObj.toLocaleDateString('es-ES', options);
         document.getElementById('mobileDateTitle').textContent = 
           dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-        document.getElementById('mobileCafeName').textContent = client.name;
 
-        // Renderizar lista de productos
+        // Obtener pedidos del día seleccionado
+        const orders = await this.store.getOrders(client.id, selectedDate, selectedDate);
+        const returns = await this.store.getReturns(client.id, selectedDate, selectedDate);
+
+        // Renderizar lista de productos con inputs
         const container = document.getElementById('mobileProductsList');
-        const dayName = today.toLocaleDateString('es-ES', { weekday: 'long' });
-        const dayCapitalized = dayName.charAt(0).toUpperCase() + dayName.slice(1);
-
         container.innerHTML = client.products.map((product, idx) => {
-          const isChecked = client.currentWeek.data[product.name][dayCapitalized] > 0;
+          const orderQty = (orders[product.name] && orders[product.name][selectedDate]) || 0;
+          const returnQty = (returns[product.name] && returns[product.name][selectedDate]) || 0;
+          
           return `
-            <div class="mobile-product-item ${isChecked ? 'checked' : ''}" 
-                 data-product="${product.name}"
-                 data-day="${dayCapitalized}">
-              <div class="mobile-product-name">${product.name}</div>
-              <div class="mobile-checkbox ${isChecked ? 'checked' : ''}"
-                   onclick="app.toggleMobileProduct('${product.name}', '${dayCapitalized}')">
-                <span class="mobile-checkbox-icon">✓</span>
+            <div class="mobile-product-item" style="background: var(--surface); padding: 20px; border-radius: 12px; margin-bottom: 12px; box-shadow: var(--shadow);">
+              <div class="mobile-product-name" style="font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--text);">${product.name}</div>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <div style="flex: 1;">
+                  <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Pedido</label>
+                  <input type="number" 
+                         class="qty-input" 
+                         value="${orderQty}" 
+                         onchange="app.updateMobileOrder('${product.id}', '${selectedDate}', this.value, 'order')"
+                         style="width: 100%; min-height: 70px; font-size: 28px; text-align: center; padding: 16px; border: 3px solid var(--border); border-radius: 12px;">
+                </div>
+                ${client.allowReturns && (product.name === 'Croissant' || product.name === 'Chocolatín') ? `
+                <div style="flex: 1;">
+                  <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">↩️ Regresado</label>
+                  <input type="number" 
+                         class="qty-input" 
+                         value="${returnQty}" 
+                         onchange="app.updateMobileOrder('${product.id}', '${selectedDate}', this.value, 'return')"
+                         style="width: 100%; min-height: 70px; font-size: 28px; text-align: center; padding: 16px; border: 3px solid var(--danger); border-radius: 12px;">
+                </div>
+                ` : ''}
               </div>
             </div>
           `;
         }).join('');
       }
 
-      toggleMobileProduct(productName, day) {
-        const client = this.store.getClients()[this.currentClientIndex];
-        const currentValue = client.currentWeek.data[productName][day] || 0;
+      async updateMobileOrder(productId, fecha, cantidad, type) {
+        const clients = await this.store.getClients();
+        const client = clients[this.currentClientIndex];
+        const qty = parseInt(cantidad) || 0;
         
-        // Toggle: si es 0, lo pone en 1; si es > 0, lo pone en 0
-        client.currentWeek.data[productName][day] = currentValue > 0 ? 0 : 1;
-        
-        this.store.updateClient(this.currentClientIndex, client);
-        
-        // Actualizar UI
-        const item = document.querySelector(`[data-product="${productName}"][data-day="${day}"]`);
-        const checkbox = item.querySelector('.mobile-checkbox');
-        
-        if (currentValue > 0) {
-          item.classList.remove('checked');
-          checkbox.classList.remove('checked');
-        } else {
-          item.classList.add('checked');
-          checkbox.classList.add('checked');
+        if (type === 'order') {
+          await this.store.setOrderQuantity(client.id, productId, fecha, qty);
+        } else if (type === 'return') {
+          await this.store.setReturnQuantity(client.id, productId, fecha, qty);
         }
-
-        // Mostrar indicador de sincronización
+        
         this.showSyncIndicator();
       }
 
@@ -2186,23 +2309,24 @@
       }
 
       openTabletReadonlyView(index, client) {
+        this.currentClientIndex = index;
         this.showView('tabletReadonlyView');
         
         document.getElementById('tabletClientName').textContent = client.name;
         
+        // Inicializar fechas
         let startDate, endDate;
         if (client.customDateRange && client.customDateRange.start && client.customDateRange.end) {
-          startDate = new Date(client.customDateRange.start + 'T00:00:00');
-          endDate = new Date(client.customDateRange.end + 'T00:00:00');
-          document.getElementById('tabletWeekRange').textContent = 
-            `${OrderManager.formatDate(startDate)} - ${OrderManager.formatDate(endDate)}`;
+          startDate = client.customDateRange.start;
+          endDate = client.customDateRange.end;
         } else {
           const { start, end } = OrderManager.getWeekDates(client.weekRange);
           startDate = start;
           endDate = end;
-          document.getElementById('tabletWeekRange').textContent = 
-            `${OrderManager.formatDate(start)} - ${OrderManager.formatDate(end)}`;
         }
+        
+        document.getElementById('tabletStartDate').value = startDate;
+        document.getElementById('tabletEndDate').value = endDate;
 
         this.renderTabletTable(client);
         this.updateTabletTotals(client);
@@ -2218,8 +2342,44 @@
         }, 3000);
       }
 
+      async updateTabletDateRange() {
+        const clients = await this.store.getClients();
+        const client = clients[this.currentClientIndex];
+        this.renderTabletTable(client);
+        this.updateTabletTotals(client);
+      }
+
+      async changeTabletWeek(direction) {
+        const startDate = new Date(document.getElementById('tabletStartDate').value);
+        const endDate = new Date(document.getElementById('tabletEndDate').value);
+        
+        startDate.setDate(startDate.getDate() + (direction * 7));
+        endDate.setDate(endDate.getDate() + (direction * 7));
+        
+        document.getElementById('tabletStartDate').value = startDate.toISOString().split('T')[0];
+        document.getElementById('tabletEndDate').value = endDate.toISOString().split('T')[0];
+        
+        await this.updateTabletDateRange();
+      }
+
+      async resetTabletToCurrentWeek() {
+        const clients = await this.store.getClients();
+        const client = clients[this.currentClientIndex];
+        const dates = OrderManager.getWeekDates(client.weekRange, 0);
+        
+        document.getElementById('tabletStartDate').value = dates.start;
+        document.getElementById('tabletEndDate').value = dates.end;
+        
+        await this.updateTabletDateRange();
+      }
+
       renderTabletTable(client) {
-        const days = OrderManager.getWeekDays(client.weekRange);
+        const startDate = document.getElementById('tabletStartDate').value;
+        const endDate = document.getElementById('tabletEndDate').value;
+        
+        if (!startDate || !endDate) return;
+        
+        const days = OrderManager.getWeekDatesArray(startDate, endDate);
         const thead = document.getElementById('tabletOrdersTableHead');
         const tbody = document.getElementById('tabletOrdersTableBody');
 
@@ -2576,14 +2736,14 @@
         }
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
           const text = e.target.result;
-          this.parseCSV(text);
+          await this.parseCSV(text);
         };
         reader.readAsText(file);
       }
 
-      parseCSV(text) {
+      async parseCSV(text) {
         const lines = text.split(/\r?\n/).filter(l => l.trim());
         const clientsMap = {};
 
@@ -2596,8 +2756,9 @@
           if (!clientsMap[cafeName]) {
             clientsMap[cafeName] = {
               name: cafeName,
+              color: '#5ac8fa', // Color por defecto
               weekRange: cols[4] || 'mon-sat',
-              allowReturns: cols[3].toLowerCase() === 'si',
+              allowReturns: cols[3] && cols[3].toLowerCase() === 'si',
               products: [],
               currentWeek: null,
               history: []
@@ -2605,18 +2766,177 @@
           }
 
           clientsMap[cafeName].products.push({
+            id: `prod-${Date.now()}-${Math.random()}`,
             name: cols[1],
             price: parseFloat(cols[2]) || 0
           });
         }
 
-        Object.values(clientsMap).forEach(client => {
-          this.store.addClient(client);
-        });
+        // Importar todas las cafeterías de forma asíncrona
+        const clients = Object.values(clientsMap);
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const client of clients) {
+          try {
+            await this.store.addClient(client);
+            successCount++;
+          } catch (error) {
+            console.error('Error al importar cafetería:', client.name, error);
+            errorCount++;
+          }
+        }
 
         this.closeModal('importModal');
-        this.renderClients();
-        alert('✅ CSV importado correctamente');
+        await this.renderClients();
+        
+        if (errorCount > 0) {
+          alert(`⚠️ Se importaron ${successCount} cafeterías con éxito, ${errorCount} con errores. Revisa la consola para más detalles.`);
+        } else {
+          alert(`✅ ${successCount} cafeterías importadas correctamente a Supabase`);
+        }
+      }
+
+      async migrateToSupabase() {
+        if (!USE_SUPABASE) {
+          alert('⚠️ Supabase no está configurado. Verifica tus credenciales.');
+          return;
+        }
+
+        const confirmMigration = confirm('🔄 ¿Migrar datos de localStorage a Supabase?\n\nEsto subirá todas las cafeterías locales a la nube.\n\n⚠️ Si ya existen cafeterías en Supabase, se duplicarán.');
+        
+        if (!confirmMigration) return;
+
+        try {
+          // Leer datos de localStorage
+          const localData = localStorage.getItem('panfitrion_v2');
+          
+          if (!localData) {
+            alert('ℹ️ No hay datos en localStorage para migrar.');
+            return;
+          }
+
+          const data = JSON.parse(localData);
+          const localClients = data.clients || [];
+
+          if (localClients.length === 0) {
+            alert('ℹ️ No hay cafeterías en localStorage para migrar.');
+            return;
+          }
+
+          let successCount = 0;
+          let errorCount = 0;
+
+          // Migrar cada cafetería
+          for (const client of localClients) {
+            try {
+              console.log('Migrando:', client.name);
+              
+              // Preparar estructura para Supabase
+              const clientToMigrate = {
+                name: client.name,
+                color: client.color || '#5ac8fa',
+                weekRange: client.weekRange || 'mon-sat',
+                allowReturns: client.allowReturns || false,
+                products: client.products.map(p => ({
+                  id: p.id || `prod-${Date.now()}-${Math.random()}`,
+                  name: p.name,
+                  price: p.price || 0
+                }))
+              };
+
+              // Agregar a Supabase
+              const cafeteriaId = await this.store.addClient(clientToMigrate);
+              
+              // Migrar pedidos si existen
+              if (client.currentWeek && client.currentWeek.data) {
+                await this.migrateOrders(cafeteriaId, client);
+              }
+
+              successCount++;
+              console.log('✅ Migrada:', client.name);
+            } catch (error) {
+              console.error('❌ Error migrando:', client.name, error);
+              errorCount++;
+            }
+          }
+
+          await this.renderClients();
+          
+          if (errorCount > 0) {
+            alert(`⚠️ Migración completada:\n✅ ${successCount} exitosas\n❌ ${errorCount} con errores\n\nRevisa la consola para detalles.`);
+          } else {
+            alert(`✅ Migración exitosa!\n\n${successCount} cafeterías migradas a Supabase.\n\nYa puedes eliminar los datos de localStorage si lo deseas.`);
+          }
+
+        } catch (error) {
+          console.error('Error en migración:', error);
+          alert('❌ Error durante la migración: ' + error.message);
+        }
+      }
+
+      async migrateOrders(cafeteriaId, client) {
+        // Esta función migra los pedidos del formato antiguo (currentWeek.data)
+        // al nuevo formato de Supabase (pedidos por fecha)
+        try {
+          const weekData = client.currentWeek.data;
+          const dates = OrderManager.getWeekDates(client.weekRange, 0);
+          const daysArray = OrderManager.getWeekDatesArray(dates.start, dates.end);
+
+          for (const productName of Object.keys(weekData)) {
+            const product = client.products.find(p => p.name === productName);
+            if (!product) continue;
+
+            const productData = weekData[productName];
+            
+            for (let i = 0; i < daysArray.length; i++) {
+              const fecha = daysArray[i];
+              const dayName = OrderManager.getDayNames(client.weekRange)[i];
+              const cantidad = productData[dayName] || 0;
+
+              if (cantidad > 0) {
+                await this.store.setOrderQuantity(cafeteriaId, product.id, fecha, cantidad);
+              }
+
+              // Migrar regresados si existen
+              if (productData.returns && productData.returns[dayName]) {
+                const returnQty = productData.returns[dayName];
+                if (returnQty > 0) {
+                  await this.store.setReturnQuantity(cafeteriaId, product.id, fecha, returnQty);
+                }
+              }
+            }
+          }
+          
+          console.log('  📊 Pedidos migrados para:', client.name);
+        } catch (error) {
+          console.error('  ⚠️ Error migrando pedidos:', error);
+        }
+      }
+
+      clearLocalStorage() {
+        const confirmClear = confirm('🗑️ ¿Eliminar TODOS los datos de localStorage?\n\n⚠️ ADVERTENCIA: Esta acción NO se puede deshacer.\n\n✅ Asegúrate de haber migrado tus datos a Supabase antes de continuar.\n\n¿Deseas continuar?');
+        
+        if (!confirmClear) return;
+
+        const doubleConfirm = confirm('⚠️ ÚLTIMA CONFIRMACIÓN\n\nEsto borrará permanentemente:\n- Todas las cafeterías locales\n- Todos los pedidos guardados\n- Todo el historial\n\n¿Estás SEGURO?');
+        
+        if (!doubleConfirm) return;
+
+        try {
+          // Eliminar datos de localStorage
+          localStorage.removeItem('panfitrion_v2');
+          localStorage.removeItem('panfitrion_data'); // Por si existe versión antigua
+          
+          console.log('✅ localStorage eliminado');
+          alert('✅ Datos locales eliminados correctamente.\n\nAhora solo usarás Supabase.\n\nRecarga la página para ver los cambios.');
+          
+          // Recargar página
+          location.reload();
+        } catch (error) {
+          console.error('Error al eliminar localStorage:', error);
+          alert('❌ Error al eliminar datos: ' + error.message);
+        }
       }
 
       async exportAllPDF() {
