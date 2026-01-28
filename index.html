@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panfitrión - Vista Cafeterías</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 200px;
+            background: #fff;
+            padding: 24px 12px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .cafe-button {
+            padding: 16px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            color: white;
+            text-align: left;
+        }
+
+        .cafe-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        .cafe-button.active {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .date-range {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+
+        .date-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .date-input {
+            padding: 8px 12px;
+            border: 2px solid #d2d2d7;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            min-width: 140px;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #0a84ff;
+        }
+
+        .week-nav-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .week-nav-btn:hover {
+            background: #e5e5e7;
+            transform: scale(1.05);
+        }
+
+        .week-nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .reset-btn {
+            padding: 8px 16px;
+            background: #f5f5f7;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #1d1d1f;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: #e5e5e7;
+        }
+
+        .export-btn {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #0a84ff;
+            border-radius: 10px;
+            color: #0a84ff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .export-btn:hover {
+            background: #0a84ff;
+            color: white;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        th {
+            padding: 16px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1d1d1f;
+            border-bottom: 3px solid #e5e5e7;
+        }
+
+        th:first-child {
+            text-align: left;
+            padding-left: 24px;
+        }
+
+        td {
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        td:first-child {
+            text-align: left;
+            padding-left: 24px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        tbody tr {
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .number-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            min-height: 50px;
+            border-radius: 50%;
+            border: 3px solid #1d1d1f;
+            padding: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #86868b;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        /* Colores predefinidos para cafeterías */
+        .color-1 { background: #5ac8fa; } /* Admin - Azul */
+        .color-2 { background: #34c759; } /* Break - Verde */
+        .color-3 { background: #ff3b30; } /* Blom - Rojo */
+        .color-4 { background: #ff9500; } /* Ponde - Naranja */
+        .color-5 { background: #af52de; } /* Zurv - Morado */
+        .color-6 { background: #ff2d55; } /* Rosa */
+        .color-7 { background: #5856d6; } /* Índigo */
+        .color-8 { background: #ffcc00; } /* Amarillo */
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            font-size: 18px;
+            color: #86868b;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: #0a84ff;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <!-- Botones de cafeterías se cargarán aquí -->
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div class="date-range" id="dateRange">Rango fechas</div>
+            <div class="date-controls">
+                <button class="week-nav-btn" onclick="changeWeek(-1)" title="Semana anterior">←</button>
+                <input type="date" class="date-input" id="startDate" onchange="updateDateRange()">
+                <span style="color: #86868b; font-weight: 600;">a</span>
+                <input type="date" class="date-input" id="endDate" onchange="updateDateRange()">
+                <button class="reset-btn" onclick="resetToCurrentWeek()">🗓️ Hoy</button>
+                <button class="week-nav-btn" onclick="changeWeek(1)" title="Semana siguiente">→</button>
+            </div>
+            <button class="export-btn" onclick="exportToPNG()">Export PNG</button>
+        </div>
+
+        <div class="table-container" id="tableContainer">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando cafeterías...
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ============================================
+        const SUPABASE_URL = 'https://bjuduoggpnvwjuqqbwuz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqdWR1b2dncG52d2p1cXFid3V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwOTg5MDcsImV4cCI6MjA4NDY3NDkwN30.tCtLbpj4e3KvsB3uPbg3uQiZRPpOLlswiDtWwlsZUXE';
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const USE_SUPABASE = SUPABASE_URL !== 'TU_SUPABASE_URL';
+
+        // ============================================
+        // DATOS GLOBALES
+        // ============================================
+        let cafeterias = [];
+        let currentCafeteria = null;
+        let currentWeekOffset = 0;
+
+        // ============================================
+        // UTILIDADES DE FECHA
+        // ============================================
+        const DateUtils = {
+            getWeekDates(range, weekOffset = 0) {
+                const today = new Date();
+                const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                d.setDate(d.getDate() + (weekOffset * 7));
+                const day = d.getDay();
+                
+                let start, end;
+                if (range === 'tue-mon') {
+                    const offset = day >= 2 ? day - 2 : 7 - (2 - day);
+                    start = new Date(d);
+                    start.setDate(d.getDate() - offset);
+                    end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                } else {
+                    const offset = day >= 1 ? day - 1 : 6;
+                    start = new Date(d);
+                    start.setDate(d.getDate() - offset);
+                    end = new Date(start);
+                    end.setDate(start.getDate() + 5);
+                }
+                
+                return { start, end };
+            },
+
+            getWeekDays(range) {
+                return range === 'tue-mon' 
+                    ? ['Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Lunes']
+                    : ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            },
+
+            formatDate(date) {
+                const day = date.getDate();
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            },
+
+            getWeekDatesArray(range, weekOffset = 0) {
+                const { start } = this.getWeekDates(range, weekOffset);
+                const dates = [];
+                const numDays = range === 'tue-mon' ? 6 : 5;
+                
+                for (let i = 0; i <= numDays; i++) {
+                    const date = new Date(start);
+                    date.setDate(start.getDate() + i);
+                    dates.push(date);
+                }
+                
+                return dates;
+            }
+        };
+
+        // ============================================
+        // CARGAR CAFETERÍAS
+        // ============================================
+        async function loadCafeterias() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('cafeterias')
+                    .select(`
+                        *,
+                        productos (*)
+                    `)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+
+                cafeterias = data.map((cafe, index) => ({
+                    id: cafe.id,
+                    nombre: cafe.nombre,
+                    rangoSemana: cafe.rango_semana,
+                    permiteRegresados: cafe.permite_regresados,
+                    productos: cafe.productos.map(p => ({
+                        id: p.id,
+                        nombre: p.nombre,
+                        precio: p.precio
+                    })),
+                    color: `color-${(index % 8) + 1}`,
+                    customDateRange: null // Almacena rango personalizado por cafetería
+                }));
+
+                renderSidebar();
+                
+                if (cafeterias.length > 0) {
+                    selectCafeteria(cafeterias[0]);
+                } else {
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error al cargar cafeterías:', error);
+                showEmptyState();
+            }
+        }
+
+        // ============================================
+        // RENDERIZAR SIDEBAR
+        // ============================================
+        function renderSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            
+            if (cafeterias.length === 0) {
+                sidebar.innerHTML = '<p style="text-align: center; color: #86868b;">No hay cafeterías</p>';
+                return;
+            }
+
+            sidebar.innerHTML = cafeterias.map(cafe => `
+                <button class="cafe-button ${cafe.color}" 
+                        onclick="selectCafeteria(cafeterias.find(c => c.id === '${cafe.id}'))">
+                    ${cafe.nombre}
+                </button>
+            `).join('');
+        }
+
+        // ============================================
+        // SELECCIONAR CAFETERÍA
+        // ============================================
+        async function selectCafeteria(cafe) {
+            currentCafeteria = cafe;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.cafe-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event?.target?.classList.add('active');
+
+            // Restaurar offset o rango personalizado
+            if (cafe.customDateRange) {
+                document.getElementById('startDate').value = cafe.customDateRange.start;
+                document.getElementById('endDate').value = cafe.customDateRange.end;
+            } else {
+                // Usar semana actual
+                const { start, end } = DateUtils.getWeekDates(cafe.rangoSemana, currentWeekOffset);
+                document.getElementById('startDate').value = start.toISOString().split('T')[0];
+                document.getElementById('endDate').value = end.toISOString().split('T')[0];
+            }
+
+            // Cargar datos
+            await loadCafeteriaData();
+        }
+
+        // ============================================
+        // CARGAR DATOS DE CAFETERÍA
+        // ============================================
+        async function loadCafeteriaData() {
+            if (!currentCafeteria) return;
+
+            const startStr = document.getElementById('startDate').value;
+            const endStr = document.getElementById('endDate').value;
+
+            if (!startStr || !endStr) return;
+
+            const start = new Date(startStr + 'T00:00:00');
+            const end = new Date(endStr + 'T00:00:00');
+
+            document.getElementById('dateRange').textContent = 
+                `Rango fechas ${DateUtils.formatDate(start)} a ${DateUtils.formatDate(end)}`;
+
+            try {
+                // Cargar pedidos
+                const { data: pedidos, error } = await supabaseClient
+                    .from('pedidos')
+                    .select(`
+                        *,
+                        productos (id, nombre, precio)
+                    `)
+                    .eq('cafeteria_id', currentCafeteria.id)
+                    .gte('fecha', startStr)
+                    .lte('fecha', endStr);
+
+                if (error) throw error;
+
+                renderTable(pedidos || [], start, end);
+            } catch (error) {
+                console.error('Error al cargar pedidos:', error);
+                renderTable([], start, end);
+            }
+        }
+
+        // ============================================
+        // RENDERIZAR TABLA
+        // ============================================
+        function renderTable(pedidos, startDate, endDate) {
+            // Generar array de fechas entre start y end
+            const dates = [];
+            const current = new Date(startDate);
+            while (current <= endDate) {
+                dates.push(new Date(current));
+                current.setDate(current.getDate() + 1);
+            }
+
+            // Organizar pedidos por producto y fecha
+            const pedidosMap = {};
+            pedidos.forEach(pedido => {
+                const productName = pedido.productos.nombre;
+                if (!pedidosMap[productName]) {
+                    pedidosMap[productName] = {};
+                }
+                pedidosMap[productName][pedido.fecha] = pedido.cantidad;
+            });
+
+            let html = '<table>';
+            
+            // Encabezado con días de la semana
+            html += '<thead><tr>';
+            html += '<th></th>';
+            dates.forEach(date => {
+                const dayName = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][date.getDay()];
+                html += `<th>${dayName}<br>${date.getDate()}/${date.getMonth() + 1}</th>`;
+            });
+            html += '</tr></thead>';
+
+            // Cuerpo
+            html += '<tbody>';
+            currentCafeteria.productos.forEach(producto => {
+                html += '<tr>';
+                html += `<td>${producto.nombre}</td>`;
+                
+                dates.forEach(date => {
+                    const dateStr = date.toISOString().split('T')[0];
+                    const cantidad = pedidosMap[producto.nombre]?.[dateStr] || '';
+                    html += `<td>`;
+                    if (cantidad) {
+                        html += `<span class="number-circle">${cantidad}</span>`;
+                    }
+                    html += `</td>`;
+                });
+                
+                html += '</tr>';
+            });
+            html += '</tbody>';
+            
+            html += '</table>';
+
+            document.getElementById('tableContainer').innerHTML = html;
+        }
+
+        // ============================================
+        // CONTROL DE FECHAS
+        // ============================================
+        function updateDateRange() {
+            if (!currentCafeteria) return;
+            
+            const startStr = document.getElementById('startDate').value;
+            const endStr = document.getElementById('endDate').value;
+            
+            if (!startStr || !endStr) return;
+            
+            // Guardar rango personalizado para esta cafetería
+            currentCafeteria.customDateRange = { start: startStr, end: endStr };
+            
+            loadCafeteriaData();
+        }
+
+        function changeWeek(direction) {
+            const startInput = document.getElementById('startDate');
+            const endInput = document.getElementById('endDate');
+            
+            const currentStart = new Date(startInput.value + 'T00:00:00');
+            const currentEnd = new Date(endInput.value + 'T00:00:00');
+            
+            currentStart.setDate(currentStart.getDate() + (direction * 7));
+            currentEnd.setDate(currentEnd.getDate() + (direction * 7));
+            
+            startInput.value = currentStart.toISOString().split('T')[0];
+            endInput.value = currentEnd.toISOString().split('T')[0];
+            
+            updateDateRange();
+        }
+
+        function resetToCurrentWeek() {
+            if (!currentCafeteria) return;
+            
+            const { start, end } = DateUtils.getWeekDates(currentCafeteria.rangoSemana, 0);
+            document.getElementById('startDate').value = start.toISOString().split('T')[0];
+            document.getElementById('endDate').value = end.toISOString().split('T')[0];
+            
+            currentCafeteria.customDateRange = null;
+            updateDateRange();
+        }
+
+        // ============================================
+        // ESTADO VACÍO
+        // ============================================
+        function showEmptyState() {
+            document.getElementById('tableContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>No hay cafeterías</h3>
+                    <p>Crea cafeterías desde la aplicación principal</p>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // EXPORTAR A PNG
+        // ============================================
+        async function exportToPNG() {
+            if (!currentCafeteria) {
+                alert('Selecciona una cafetería primero');
+                return;
+            }
+
+            const tableContainer = document.getElementById('tableContainer');
+            const canvas = await html2canvas(tableContainer, {
+                scale: 2,
+                backgroundColor: '#ffffff'
+            });
+
+            const startStr = document.getElementById('startDate').value;
+            const endStr = document.getElementById('endDate').value;
+            const start = new Date(startStr + 'T00:00:00');
+            const end = new Date(endStr + 'T00:00:00');
+            const filename = `${currentCafeteria.nombre} ${DateUtils.formatDate(start)}-${DateUtils.formatDate(end)}.png`;
+
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // ============================================
+        // INICIALIZAR
+        // ============================================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCafeterias();
+        });
+    </script>
+</body>
+</html>
