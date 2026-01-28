@@ -1008,29 +1008,18 @@
         </div>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; margin-bottom: 24px;">
-        <div class="stats-row" style="flex: 1; margin: 0;">
-          <div class="stat-card">
-            <div class="stat-label">Total Bruto</div>
-            <div class="stat-value" id="grossTotal">$0.00</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Regresados</div>
-            <div class="stat-value" id="returnsTotal">$0.00</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Total Neto</div>
-            <div class="stat-value" id="netTotal">$0.00</div>
-          </div>
+      <div class="stats-row" style="margin-bottom: 24px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Bruto</div>
+          <div class="stat-value" id="grossTotal">$0.00</div>
         </div>
-
-        <div style="background: var(--surface); padding: 12px; border-radius: 10px; box-shadow: var(--shadow); border: 1px solid var(--border); flex-shrink: 0;">
-          <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase;">📅 Fechas</div>
-          <div style="display: flex; gap: 6px; align-items: center;">
-            <input type="date" id="customDateStart" style="padding: 8px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; width: 130px; min-height: 36px;">
-            <span style="color: var(--text-secondary); font-size: 12px;">a</span>
-            <input type="date" id="customDateEnd" style="padding: 8px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; width: 130px; min-height: 36px;">
-          </div>
+        <div class="stat-card">
+          <div class="stat-label">Regresados</div>
+          <div class="stat-value" id="returnsTotal">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Neto</div>
+          <div class="stat-value" id="netTotal">$0.00</div>
         </div>
       </div>
 
@@ -2225,6 +2214,32 @@
       }
 
       mergeSupabaseData(client) {
+        // Asegurar que la estructura existe
+        if (!client.currentWeek) {
+          client.currentWeek = { data: {} };
+        }
+        if (!client.currentWeek.data) {
+          client.currentWeek.data = {};
+        }
+
+        // Inicializar estructura para todos los productos
+        const days = OrderManager.getWeekDays(client.weekRange);
+        client.products.forEach(product => {
+          if (!client.currentWeek.data[product.name]) {
+            client.currentWeek.data[product.name] = {};
+          }
+          // Inicializar todos los días en 0
+          days.forEach(day => {
+            if (!client.currentWeek.data[product.name][day]) {
+              client.currentWeek.data[product.name][day] = 0;
+            }
+          });
+          // Inicializar returns
+          if (!client.currentWeek.data[product.name].returns) {
+            client.currentWeek.data[product.name].returns = {};
+          }
+        });
+
         // Merge pedidos desde Supabase
         Object.keys(this.currentOrders).forEach(productName => {
           if (!client.currentWeek.data[productName]) {
@@ -2278,6 +2293,10 @@
         
         const date = new Date(start);
         date.setDate(start.getDate() + dayIndex);
+        return date.toISOString().split('T')[0];
+      }
+
+      formatDateForDB(date) {
         return date.toISOString().split('T')[0];
       }
 
@@ -2489,7 +2508,7 @@
         document.getElementById('tabletNetTotal').textContent = `$${totals.net.toFixed(2)}`;
       }
 
-      openDesktopOrderView(index, client) {
+      async openDesktopOrderView(index, client) {
         this.showView('ordersView');
         
         document.getElementById('ordersClientName').textContent = client.name;
@@ -2504,40 +2523,28 @@
           document.getElementById('ordersWeekRange').textContent += ` (${weekText})`;
         }
 
-        const dateStartInput = document.getElementById('customDateStart');
-        const dateEndInput = document.getElementById('customDateEnd');
-        
-        if (client.customDateRange) {
-          dateStartInput.value = client.customDateRange.start || '';
-          dateEndInput.value = client.customDateRange.end || '';
-        } else {
-          dateStartInput.value = '';
-          dateEndInput.value = '';
-        }
-
-        dateStartInput.onchange = () => {
-          if (!client.customDateRange) client.customDateRange = {};
-          client.customDateRange.start = dateStartInput.value;
-          this.store.updateClient(index, client);
-          this.openOrders(index);
-        };
-
-        dateEndInput.onchange = () => {
-          if (!client.customDateRange) client.customDateRange = {};
-          client.customDateRange.end = dateEndInput.value;
-          this.store.updateClient(index, client);
-          this.openOrders(index);
-        };
-
-        this.renderOrdersTable(client);
-        this.updateTotals(client);
+        await this.renderOrdersTable(client);
+        await this.updateTotals(client);
       }
 
-      renderOrdersTable(client) {
+      async renderOrdersTable(client) {
         const days = OrderManager.getWeekDays(client.weekRange);
         const dates = OrderManager.getWeekDatesArray(client.weekRange, this.weekOffset);
         const thead = document.getElementById('ordersTableHead');
         const tbody = document.getElementById('ordersTableBody');
+
+        // Cargar datos de Supabase para el rango actual
+        if (USE_SUPABASE && client.id) {
+          const { start, end } = OrderManager.getWeekDates(client.weekRange, this.weekOffset);
+          const startStr = this.formatDateForDB(start);
+          const endStr = this.formatDateForDB(end);
+          
+          this.currentOrders = await this.store.getOrders(client.id, startStr, endStr) || {};
+          this.currentReturns = await this.store.getReturns(client.id, startStr, endStr) || {};
+          
+          // Actualizar estructura con datos de Supabase
+          this.mergeSupabaseData(client);
+        }
 
         thead.innerHTML = `
           <tr>
@@ -2636,8 +2643,8 @@
           }
         }
         
-        this.renderOrdersTable(client);
-        this.updateTotals(client);
+        await this.renderOrdersTable(client);
+        await this.updateTotals(client);
       }
 
       async setDailyReturn(productName, day, value) {
@@ -2658,18 +2665,67 @@
           }
         }
         
-        this.renderOrdersTable(client);
-        this.updateTotals(client);
+        await this.renderOrdersTable(client);
+        await this.updateTotals(client);
       }
 
-      updateTotals(client) {
-        const { gross, returns, net } = OrderManager.calculateTotals(client);
+      async updateTotals(client) {
+        // Obtener fechas del selector
+        let startDate, endDate;
+        const { start, end } = OrderManager.getWeekDates(client.weekRange, this.weekOffset);
+        startDate = this.formatDateForDB(start);
+        endDate = this.formatDateForDB(end);
+
+        // Calcular totales usando Supabase
+        let gross = 0;
+        let returns = 0;
+
+        try {
+          // Obtener pedidos del rango
+          const orders = await this.store.getOrders(client.id, startDate, endDate);
+          
+          // Calcular bruto
+          for (const productName in orders) {
+            const product = client.products.find(p => p.name === productName);
+            if (!product) continue;
+            
+            for (const fecha in orders[productName]) {
+              const cantidad = orders[productName][fecha];
+              gross += cantidad * product.price;
+            }
+          }
+
+          // Calcular regresados
+          if (client.allowReturns) {
+            const returnsData = await this.store.getReturns(client.id, startDate, endDate);
+            
+            for (const productName in returnsData) {
+              const product = client.products.find(p => p.name === productName);
+              if (!product) continue;
+              
+              const isReturnable = product.name.toLowerCase() === 'croissant' || 
+                                   product.name.toLowerCase() === 'chocolatín';
+              
+              if (isReturnable) {
+                for (const fecha in returnsData[productName]) {
+                  const cantidad = returnsData[productName][fecha];
+                  returns += cantidad * product.price;
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error al calcular totales:', error);
+        }
+
+        const net = Math.max(0, gross - returns);
+
         document.getElementById('grossTotal').textContent = `$${gross.toFixed(2)}`;
         document.getElementById('returnsTotal').textContent = `$${returns.toFixed(2)}`;
         document.getElementById('netTotal').textContent = `$${net.toFixed(2)}`;
       }
 
-      resetWeek() {
+      async resetWeek() {
         if (!confirm('¿Reiniciar toda la semana? Esta acción no se puede deshacer.')) return;
 
         const client = this.store.getClients()[this.currentClientIndex];
@@ -2683,8 +2739,8 @@
         });
 
         this.store.updateClient(this.currentClientIndex, client);
-        this.renderOrdersTable(client);
-        this.updateTotals(client);
+        await this.renderOrdersTable(client);
+        await this.updateTotals(client);
       }
 
       exportWeek() {
