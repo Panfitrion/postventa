@@ -1364,15 +1364,23 @@
         }
 
         try {
-          // 1. Crear cafetería
+          // 1. Crear cafetería (sin color primero, para compatibilidad)
+          const cafeData = {
+            nombre: client.name,
+            rango_semana: client.weekRange,
+            permite_regresados: client.allowReturns
+          };
+          
+          // Intentar agregar color si la columna existe
+          try {
+            cafeData.color = client.color || '#5ac8fa';
+          } catch (e) {
+            console.log('ℹ️ Columna color no disponible, continuando sin ella');
+          }
+
           const { data: cafeteria, error: cafeError } = await supabaseClient
             .from('cafeterias')
-            .insert({
-              nombre: client.name,
-              color: client.color || '#5ac8fa',
-              rango_semana: client.weekRange,
-              permite_regresados: client.allowReturns
-            })
+            .insert(cafeData)
             .select()
             .single();
 
@@ -1397,8 +1405,51 @@
           return cafeteria.id;
         } catch (error) {
           console.error('Error al crear cafetería:', error);
+          
+          // Si el error es por la columna color, reintentar sin ella
+          if (error.code === 'PGRST204' && error.message.includes('color')) {
+            console.log('⚠️ Reintentando sin columna color...');
+            return this.addClientWithoutColor(client);
+          }
+          
           alert('⚠️ Error al crear cafetería: ' + error.message);
           return this.addLocalClient(client);
+        }
+      }
+
+      async addClientWithoutColor(client) {
+        try {
+          const { data: cafeteria, error: cafeError } = await supabaseClient
+            .from('cafeterias')
+            .insert({
+              nombre: client.name,
+              rango_semana: client.weekRange,
+              permite_regresados: client.allowReturns
+            })
+            .select()
+            .single();
+
+          if (cafeError) throw cafeError;
+
+          if (client.products.length > 0) {
+            const productos = client.products.map(p => ({
+              cafeteria_id: cafeteria.id,
+              nombre: p.name,
+              precio: p.price
+            }));
+
+            const { error: prodError } = await supabaseClient
+              .from('productos')
+              .insert(productos);
+
+            if (prodError) throw prodError;
+          }
+
+          console.log('✅ Cafetería creada (sin color):', cafeteria);
+          return cafeteria.id;
+        } catch (error) {
+          console.error('Error al crear cafetería sin color:', error);
+          throw error;
         }
       }
 
@@ -1408,19 +1459,38 @@
         }
 
         try {
+          const updateData = {
+            nombre: client.name,
+            permite_regresados: client.allowReturns
+          };
+          
+          // Intentar actualizar color si existe
+          try {
+            updateData.color = client.color || '#5ac8fa';
+          } catch (e) {
+            // Columna no existe, continuar sin ella
+          }
+
           const { error } = await supabaseClient
             .from('cafeterias')
-            .update({
-              nombre: client.name,
-              color: client.color || '#5ac8fa',
-              permite_regresados: client.allowReturns
-            })
+            .update(updateData)
             .eq('id', client.id);
 
-          if (error) throw error;
+          if (error) {
+            // Si falla por color, reintentar sin ella
+            if (error.code === 'PGRST204' && error.message.includes('color')) {
+              delete updateData.color;
+              const { error: retryError } = await supabaseClient
+                .from('cafeterias')
+                .update(updateData)
+                .eq('id', client.id);
+              
+              if (retryError) throw retryError;
+            } else {
+              throw error;
+            }
+          }
 
-          // Actualizar productos si cambiaron
-          // (Nota: esto es más complejo, simplificado por ahora)
           console.log('✅ Cafetería actualizada en Supabase');
         } catch (error) {
           console.error('Error al actualizar cafetería:', error);
