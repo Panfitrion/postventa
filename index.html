@@ -2586,8 +2586,8 @@
         // Renderizar lista de productos con inputs
         const container = document.getElementById('mobileProductsList');
         container.innerHTML = client.products.map((product, idx) => {
-          const orderQty = (orders[product.name] && orders[product.name][selectedDate]) || 0;
-          const returnQty = (returns[product.name] && returns[product.name][selectedDate]) || 0;
+          const orderQty = (orders[product.name] && orders[product.name][selectedDate]) || '';
+          const returnQty = (returns[product.name] && returns[product.name][selectedDate]) || '';
           
           return `
             <div class="mobile-product-item" style="background: var(--surface); padding: 20px; border-radius: 12px; margin-bottom: 12px; box-shadow: var(--shadow);">
@@ -2960,8 +2960,8 @@
           html += `<td><strong>${product.name}</strong></td>`;
           
           days.forEach(day => {
-            const qty = productData[day] || 0;
-            weekTotal += qty;
+            const qty = productData[day] || '';
+            weekTotal += parseInt(qty) || 0;
             html += `
               <td>
                 <div class="qty-group">
@@ -2970,7 +2970,7 @@
                          value="${qty || ''}"
                          pattern="[0-9]*"
                          inputmode="numeric"
-                         placeholder="0"
+                         placeholder=""
                          onchange="app.setQuantity('${product.name}', '${day}', this.value)"
                          onfocus="this.select()">
                 </div>
@@ -2994,8 +2994,8 @@
             html += `<td><strong>↩️ Regresados</strong></td>`;
             
             days.forEach(day => {
-              const returnQty = returnsData[day] || 0;
-              totalReturns += returnQty;
+              const returnQty = returnsData[day] || '';
+              totalReturns += parseInt(returnQty) || 0;
               html += `
                 <td>
                   <div class="qty-group">
@@ -3005,7 +3005,7 @@
                            value="${returnQty || ''}"
                            pattern="[0-9]*"
                            inputmode="numeric"
-                           placeholder="0"
+                           placeholder=""
                            onchange="app.setDailyReturn('${product.name}', '${day}', this.value)"
                            onfocus="this.select()">
                   </div>
