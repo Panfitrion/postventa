@@ -1469,11 +1469,13 @@
             color: cafe.color || '#5ac8fa',
             weekRange: cafe.rango_semana,
             allowReturns: cafe.permite_regresados,
-            products: cafe.productos.map(p => ({
-              id: p.id,
-              name: p.nombre,
-              price: p.precio
-            })),
+            products: cafe.productos
+              .sort((a, b) => (a.orden || 0) - (b.orden || 0))
+              .map(p => ({
+                id: p.id,
+                name: p.nombre,
+                price: p.precio
+              })),
             currentWeek: null,
             history: []
           }));
@@ -1523,10 +1525,11 @@
 
           // 2. Crear productos
           if (client.products.length > 0) {
-            const productos = client.products.map(p => ({
+            const productos = client.products.map((p, index) => ({
               cafeteria_id: cafeteria.id,
               nombre: p.name,
-              precio: p.price
+              precio: p.price,
+              orden: index
             }));
 
             const { error: prodError } = await supabaseClient
@@ -1567,10 +1570,11 @@
           if (cafeError) throw cafeError;
 
           if (client.products.length > 0) {
-            const productos = client.products.map(p => ({
+            const productos = client.products.map((p, index) => ({
               cafeteria_id: cafeteria.id,
               nombre: p.name,
-              precio: p.price
+              precio: p.price,
+              orden: index
             }));
 
             const { error: prodError } = await supabaseClient
@@ -1646,17 +1650,20 @@
 
           for (const [nameKey, product] of newProductsMap) {
             const existing = existingMap.get(nameKey);
+            const orden = client.products.findIndex(p => p.name.toLowerCase().trim() === nameKey);
+            
             if (existing) {
-              // Actualizar si el precio cambió
-              if (parseFloat(existing.precio) !== parseFloat(product.price)) {
-                toUpdate.push({ id: existing.id, precio: product.price });
+              // Actualizar si el precio o el orden cambió
+              if (parseFloat(existing.precio) !== parseFloat(product.price) || (existing.orden !== orden)) {
+                toUpdate.push({ id: existing.id, precio: product.price, orden });
               }
             } else {
               // Insertar nuevo
               toInsert.push({
                 cafeteria_id: client.id,
                 nombre: product.name,
-                precio: product.price
+                precio: product.price,
+                orden
               });
             }
           }
@@ -1675,7 +1682,7 @@
           for (const update of toUpdate) {
             const { error: updateError } = await supabaseClient
               .from('productos')
-              .update({ precio: update.precio })
+              .update({ precio: update.precio, orden: update.orden })
               .eq('id', update.id);
             
             if (updateError) throw updateError;
