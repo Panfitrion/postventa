@@ -1626,7 +1626,71 @@
             }
           }
 
-          console.log('✅ Cafetería actualizada en Supabase');
+          // Actualizar productos: obtener los existentes y sincronizar
+          const { data: existingProducts } = await supabaseClient
+            .from('productos')
+            .select('id, nombre, precio')
+            .eq('cafeteria_id', client.id);
+
+          // Identificar productos nuevos, actualizados y eliminados
+          const existingMap = new Map(existingProducts?.map(p => [p.nombre.toLowerCase().trim(), p]) || []);
+          const newProductsMap = new Map(client.products.map(p => [p.name.toLowerCase().trim(), p]));
+
+          // Productos a eliminar (existen en DB pero no en client.products)
+          const toDelete = existingProducts?.filter(p => !newProductsMap.has(p.nombre.toLowerCase().trim())) || [];
+          
+          // Productos a actualizar (existen en ambos pero el precio cambió)
+          const toUpdate = [];
+          // Productos a insertar (están en client.products pero no en DB)
+          const toInsert = [];
+
+          for (const [nameKey, product] of newProductsMap) {
+            const existing = existingMap.get(nameKey);
+            if (existing) {
+              // Actualizar si el precio cambió
+              if (parseFloat(existing.precio) !== parseFloat(product.price)) {
+                toUpdate.push({ id: existing.id, precio: product.price });
+              }
+            } else {
+              // Insertar nuevo
+              toInsert.push({
+                cafeteria_id: client.id,
+                nombre: product.name,
+                precio: product.price
+              });
+            }
+          }
+
+          // Ejecutar eliminaciones
+          if (toDelete.length > 0) {
+            const { error: deleteError } = await supabaseClient
+              .from('productos')
+              .delete()
+              .in('id', toDelete.map(p => p.id));
+            
+            if (deleteError) throw deleteError;
+          }
+
+          // Ejecutar actualizaciones
+          for (const update of toUpdate) {
+            const { error: updateError } = await supabaseClient
+              .from('productos')
+              .update({ precio: update.precio })
+              .eq('id', update.id);
+            
+            if (updateError) throw updateError;
+          }
+
+          // Ejecutar inserciones
+          if (toInsert.length > 0) {
+            const { error: insertError } = await supabaseClient
+              .from('productos')
+              .insert(toInsert);
+            
+            if (insertError) throw insertError;
+          }
+
+          console.log('✅ Cafetería y productos actualizados en Supabase');
         } catch (error) {
           console.error('Error al actualizar cafetería:', error);
           alert('⚠️ Error al actualizar cafetería: ' + error.message);
@@ -2105,8 +2169,6 @@
               .replace(/\s+/g, ' ')
               .trim();
             
-            console.log(`Producto original: "${product.name}" -> normalizado: "${normalizedName}"`);
-            
             // Para ciertos productos, mantener separado por cafetería
             const productosPorCafeteria = ['ciabatta', 'focaccia'];
             const key = productosPorCafeteria.includes(normalizedName) 
@@ -2126,12 +2188,6 @@
         // Luego, sumar los vendidos
         for (const client of clients) {
           const orders = await this.store.getOrders(client.id, startDate, endDate) || {};
-
-          console.log(`Dashboard - ${client.name}:`, {
-            startDate,
-            endDate,
-            orders
-          });
 
           // Contar vendidos (orders es un objeto: {productName: {fecha: cantidad}})
           Object.keys(orders).forEach(productName => {
@@ -2158,14 +2214,9 @@
               if (productoStats[key]) {
                 productoStats[key].vendidos += cantidad;
               }
-              
-              console.log(`  ${productName} en ${fecha}: +${cantidad} (total: ${productoStats[key]?.vendidos || 0})`);
             });
           });
         }
-
-        console.log('Stats finales:', productoStats);
-        console.log('Keys en productoStats:', Object.keys(productoStats));
 
         // Definir grupos de productos
         const grupos = [
@@ -2214,13 +2265,9 @@
                 return normalizedBase === normalizedSearch;
               });
               
-              console.log(`Grupo ${grupo.nombre}, buscando "${prodKey}", encontrados:`, matchingKeys);
-              
               matchingKeys.forEach(key => {
                 const stat = productoStats[key];
                 productosUsados.add(key);
-                
-                console.log(`  Marcando como usado: "${key}"`);
                 
                 html += `
                   <div class="dashboard-card">
@@ -2238,9 +2285,6 @@
         const productosRestantes = Object.keys(productoStats)
           .filter(p => !productosUsados.has(p))
           .sort();
-
-        console.log('Productos usados:', Array.from(productosUsados));
-        console.log('Productos restantes:', productosRestantes);
 
         if (productosRestantes.length > 0) {
           html += `
@@ -2896,8 +2940,6 @@
         try {
           const orders = await this.store.getOrders(client.id, startDate, endDate) || {};
           
-          console.log('Tablet totals - orders:', orders);
-          
           for (const productName in orders) {
             const product = client.products.find(p => {
               // Buscar por nombre exacto o normalizado
@@ -2915,11 +2957,8 @@
               const cantidad = parseInt(orders[productName][fecha]) || 0;
               const subtotal = cantidad * product.price;
               gross += subtotal;
-              console.log(`  ${productName}: ${cantidad} x $${product.price} = $${subtotal}`);
             }
           }
-
-          console.log('Tablet totals - gross:', gross);
 
           if (client.allowReturns) {
             const returnsData = await this.store.getReturns(client.id, startDate, endDate) || {};
@@ -2949,8 +2988,6 @@
         }
 
         const net = Math.max(0, gross - returns);
-        
-        console.log('Tablet totals final - gross:', gross, 'returns:', returns, 'net:', net);
         
         document.getElementById('tabletGrossTotal').textContent = `$${gross.toFixed(2)}`;
         document.getElementById('tabletReturnsTotal').textContent = `$${returns.toFixed(2)}`;
