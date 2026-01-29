@@ -1085,15 +1085,9 @@
   <div class="main-wrapper">
   <header>
     <div class="header-content">
-      <div>
+      <div style="display: flex; align-items: center; gap: 16px;">
         <h1>🥐 Panfitrión</h1>
-        <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
-          <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">📅 RANGO GENERAL:</span>
-          <input type="date" id="globalDateStart" style="padding: 6px 10px; font-size: 13px; border: 2px solid var(--border); border-radius: 8px; min-height: 36px; width: 140px;">
-          <span style="color: var(--text-secondary); font-weight: 600;">a</span>
-          <input type="date" id="globalDateEnd" style="padding: 6px 10px; font-size: 13px; border: 2px solid var(--border); border-radius: 8px; min-height: 36px; width: 140px;">
-          <span id="connectionStatus" style="margin-left: 12px; font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 600;"></span>
-        </div>
+        <span id="connectionStatus" style="font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 600;"></span>
       </div>
       <div class="header-actions">
         <button class="btn-secondary" onclick="app.exportAllPDF()">📄 Exportar Todo</button>
@@ -1239,7 +1233,6 @@
               Cargando...
             </div>
             <button class="icon-btn" onclick="app.changeTabletWeek(1)" style="width: 40px; height: 40px; font-size: 18px;" title="Semana siguiente">→</button>
-            <button class="btn-secondary" onclick="app.downloadTabletPNG()" style="padding: 10px 16px; min-height: 40px; font-size: 14px;">📥 Descargar PNG</button>
           </div>
           <!-- Inputs ocultos para compatibilidad con el código existente -->
           <input type="date" id="tabletStartDate" style="display: none;">
