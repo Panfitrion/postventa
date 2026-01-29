@@ -2453,6 +2453,22 @@
         this.renderProductsList();
       }
 
+      moveProductUp(index) {
+        if (index === 0) return;
+        const temp = this.tempProducts[index];
+        this.tempProducts[index] = this.tempProducts[index - 1];
+        this.tempProducts[index - 1] = temp;
+        this.renderProductsList();
+      }
+
+      moveProductDown(index) {
+        if (index === this.tempProducts.length - 1) return;
+        const temp = this.tempProducts[index];
+        this.tempProducts[index] = this.tempProducts[index + 1];
+        this.tempProducts[index + 1] = temp;
+        this.renderProductsList();
+      }
+
       renderProductsList() {
         const container = document.getElementById('productsList');
         
@@ -2463,9 +2479,21 @@
 
         container.innerHTML = this.tempProducts.map((product, index) => `
           <div class="product-item">
-            <div class="product-name">${product.name}</div>
-            <div class="product-price">$${product.price.toFixed(2)}</div>
-            <button class="icon-btn" onclick="app.removeProduct(${index})">🗑️</button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <button class="icon-btn" onclick="app.moveProductUp(${index})" 
+                        style="padding: 4px 8px; font-size: 12px; ${index === 0 ? 'opacity: 0.3; cursor: not-allowed;' : ''}" 
+                        ${index === 0 ? 'disabled' : ''}>▲</button>
+                <button class="icon-btn" onclick="app.moveProductDown(${index})" 
+                        style="padding: 4px 8px; font-size: 12px; ${index === this.tempProducts.length - 1 ? 'opacity: 0.3; cursor: not-allowed;' : ''}" 
+                        ${index === this.tempProducts.length - 1 ? 'disabled' : ''}>▼</button>
+              </div>
+              <div class="product-name">${product.name}</div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div class="product-price">$${product.price.toFixed(2)}</div>
+              <button class="icon-btn" onclick="app.removeProduct(${index})">🗑️</button>
+            </div>
           </div>
         `).join('');
       }
