@@ -1,9 +1,7 @@
 // app.js - Consolidated TPV Logic
-
 // --- SUPABASE CONFIGURATION ---
 const SUPABASE_URL = 'https://ftzatcexxzyvevpysdps.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0emF0Y2V4eHp5dmV2cHlzZHBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NDE1NDksImV4cCI6MjA4NDUxNzU0OX0.ptIqy3GDqhF8BpV1BM4kHxG8qtbHA0ckGmnCS2K53BM';
-
 /**
  * @IMPORTANT SECURITY NOTE
  * These keys are exposed in the client-side code. 
@@ -15,7 +13,6 @@ let sb = null;
 if (window.supabase) {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
-
 // --- GLOBAL STATE ---
 const store = {
     categorias: {},
@@ -33,76 +30,109 @@ const store = {
     transacciones: [],
     categoriaActiva: null,
     modoReordenar: false,
-
     operacionesRetiro: [
-        { id: 1, emoji: '🗑️', nombre: 'Basura' },
-        { id: 2, emoji: '⛽', nombre: 'Gas' },
-        { id: 3, emoji: '📦', nombre: 'Suministros' },
-        { id: 4, emoji: '🔧', nombre: 'Mantenimiento' },
-        { id: 5, emoji: '🚚', nombre: 'Proveedor' },
-        { id: 6, emoji: '💡', nombre: 'Servicios' }
+        { id: 1, emoji: '🧹', nombre: 'Limpieza' },
+        { id: 2, emoji: '🗑️', nombre: 'Basura' },
+        { id: 3, emoji: '🧪', 'nombre': 'Bioproducts' },
+        { id: 4, emoji: '🌐', nombre: 'Central en Linea' }
     ],
     operacionesIngreso: [
-        { id: 1, emoji: '💰', nombre: 'Préstamo' },
-        { id: 2, emoji: '🎁', nombre: 'Propina' },
-        { id: 3, emoji: '↩️', nombre: 'Devolución' },
-        { id: 4, emoji: '⚖️', nombre: 'Ajuste' },
-        { id: 5, emoji: '💵', nombre: 'Fondo Caja' },
-        { id: 6, emoji: '📝', nombre: 'Otros' }
+        { id: 1, emoji: '🌸', nombre: 'Blom' }
     ],
     denominacionesBilletes: [500, 200, 100, 50, 20],
     denominacionesMonedas: [10, 5, 2, 1]
 };
-
 // --- UTILITY FUNCTIONS ---
 function obtenerLunesDeLaSemana(fecha) {
     const dia = fecha.getDay();
     const diff = fecha.getDate() - dia + (dia === 0 ? -6 : 1);
     return new Date(new Date(fecha).setDate(diff));
 }
-
 function obtenerSabadoDeLaSemana(lunes) {
     const sabado = new Date(lunes);
     sabado.setDate(sabado.getDate() + 5);
     return sabado;
 }
-
 function mostrarNotificacion(mensaje, tipo = 'success') {
     const container = document.getElementById('notificacion-container');
     if (!container) return;
-
     const notif = document.createElement('div');
     notif.className = `notificacion ${tipo}`;
     notif.textContent = mensaje;
     container.appendChild(notif);
-
     // Auto-remove after 3s
     setTimeout(() => {
         notif.style.opacity = '0';
         setTimeout(() => notif.remove(), 500);
     }, 3000);
 }
-
+// --- NUMPAD LOGIC ---
+function numpadInput(inputId, value) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    let current = input.value;
+    // If current is '0' and we type a number, replace it
+    if (current === '0' && value !== '.') {
+        current = value;
+    } else {
+        // Prevent multiple decimals
+        if (value === '.' && current.includes('.')) return;
+        current += value;
+    }
+    input.value = current;
+}
+function numpadClear(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) input.value = '0';
+}
+function renderOperacionesRapidas() {
+    const containerRetiro = document.getElementById('quickOpsRetiro');
+    const containerIngreso = document.getElementById('quickOpsIngreso');
+    if (containerRetiro) {
+        containerRetiro.innerHTML = '';
+        store.operacionesRetiro.forEach(op => {
+            const btn = document.createElement('button');
+            btn.className = 'win-btn';
+            btn.style.padding = '4px 8px';
+            btn.style.fontSize = '0.85rem';
+            btn.innerHTML = `${op.emoji} ${op.nombre}`;
+            btn.onclick = () => setOperacionRapida('justificacionRetiro', op.nombre);
+            containerRetiro.appendChild(btn);
+        });
+    }
+    if (containerIngreso) {
+        containerIngreso.innerHTML = '';
+        store.operacionesIngreso.forEach(op => {
+            const btn = document.createElement('button');
+            btn.className = 'win-btn';
+            btn.style.padding = '4px 8px';
+            btn.style.fontSize = '0.85rem';
+            btn.innerHTML = `${op.emoji} ${op.nombre}`;
+            btn.onclick = () => setOperacionRapida('conceptoIngreso', op.nombre);
+            containerIngreso.appendChild(btn);
+        });
+    }
+}
+function setOperacionRapida(inputId, value) {
+    const input = document.getElementById(inputId);
+    if (input) input.value = value;
+}
 // --- RENDERING LOGIC ---
 function renderizarProductos() {
     const tabsContainer = document.getElementById('categoriasTabs');
     const grid = document.getElementById('productosGrid');
     if (!tabsContainer || !grid) return;
-
     tabsContainer.innerHTML = '';
     const categoriasConProductos = Object.keys(store.categorias).filter(key =>
         store.categorias[key] && store.categorias[key].length > 0
     );
-
     if (categoriasConProductos.length === 0) {
         grid.innerHTML = '<p class="text-center" style="padding: 40px; width: 100%;">No hay productos disponibles. Agrega productos desde el panel de administración.</p>';
         return;
     }
-
     if (!store.categoriaActiva || !store.categorias[store.categoriaActiva]) {
         store.categoriaActiva = categoriasConProductos[0];
     }
-
     categoriasConProductos.forEach(categoriaKey => {
         const tab = document.createElement('button');
         tab.className = `categoria-tab win-btn ${categoriaKey === store.categoriaActiva ? 'active' : ''}`;
@@ -113,13 +143,10 @@ function renderizarProductos() {
         };
         tabsContainer.appendChild(tab);
     });
-
     grid.innerHTML = '';
     const productosAMostrar = store.categorias[store.categoriaActiva] || [];
-
     productosAMostrar.forEach((producto) => {
         const card = document.createElement('div');
-
         if (producto.esSubcategoria) {
             card.className = 'subcategoria-header';
             card.innerHTML = `${producto.nombre}`;
@@ -131,21 +158,17 @@ function renderizarProductos() {
         grid.appendChild(card);
     });
 }
-
 function actualizarVistaCarrito() {
     const carritoItems = document.getElementById('carritoItems');
     const totalCarrito = document.getElementById('totalCarrito');
     if (!carritoItems || !totalCarrito) return;
-
     if (store.carrito.length === 0) {
         carritoItems.innerHTML = '<p class="text-center" style="padding: 20px;">Carrito vacío</p>';
         totalCarrito.textContent = '0.00';
         return;
     }
-
     carritoItems.innerHTML = '';
     let total = 0;
-
     store.carrito.forEach(item => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'carrito-item';
@@ -156,15 +179,12 @@ function actualizarVistaCarrito() {
         carritoItems.appendChild(itemDiv);
         total += item.precio * item.cantidad;
     });
-
     totalCarrito.textContent = total.toFixed(2);
 }
-
 function renderizarBilletesYMonedas() {
     const gridBilletes = document.querySelector('.billetes-grid');
     const rowMonedas = document.querySelector('.monedas-row');
     if (!gridBilletes || !rowMonedas) return;
-
     gridBilletes.innerHTML = '';
     store.denominacionesBilletes.forEach(valor => {
         const img = document.createElement('img');
@@ -173,7 +193,6 @@ function renderizarBilletesYMonedas() {
         img.onclick = () => pantallaEfectivoAgregar(valor);
         gridBilletes.appendChild(img);
     });
-
     rowMonedas.innerHTML = '';
     store.denominacionesMonedas.forEach(valor => {
         const img = document.createElement('img');
@@ -183,7 +202,6 @@ function renderizarBilletesYMonedas() {
         rowMonedas.appendChild(img);
     });
 }
-
 // --- CORE LOGIC ---
 function agregarAlCarrito(producto) {
     const item = store.carrito.find(i => i.id === producto.id);
@@ -195,28 +213,23 @@ function agregarAlCarrito(producto) {
     actualizarVistaCarrito();
     mostrarNotificacion(`Agregado: ${producto.nombre}`);
 }
-
 function limpiarCarrito() {
     store.carrito = [];
     actualizarVistaCarrito();
 }
-
 function seleccionarMetodo(metodo) {
     if (store.carrito.length === 0) {
         mostrarNotificacion('El carrito está vacío', 'error');
         return;
     }
-
     store.metodoPago = metodo;
     const total = parseFloat(document.getElementById('totalCarrito').textContent);
-
     if (metodo === 'efectivo') {
         abrirPantallaEfectivo(total);
     } else {
         registrarVenta(total);
     }
 }
-
 function abrirPantallaEfectivo(total) {
     document.getElementById('pantallaEfectivoTotal').textContent = `$${total.toFixed(2)}`;
     document.getElementById('pantallaEfectivoRecibido').textContent = '0.00';
@@ -225,42 +238,33 @@ function abrirPantallaEfectivo(total) {
     document.querySelector('.app-wrapper').classList.add('hidden');
     document.getElementById('pantallaEfectivo').classList.remove('hidden');
 }
-
 function pantallaEfectivoAgregar(valor) {
     const recibidoEl = document.getElementById('pantallaEfectivoRecibido');
     const cambioEl = document.getElementById('pantallaEfectivoCambio');
     const total = parseFloat(document.getElementById('pantallaEfectivoTotal').textContent.replace('$', ''));
-
     let recibido = parseFloat(recibidoEl.textContent) + valor;
     recibidoEl.textContent = recibido.toFixed(2);
-
     let cambio = recibido - total;
     cambioEl.textContent = cambio >= 0 ? cambio.toFixed(2) : '0.00';
 }
-
 function pantallaEfectivoReset() {
     document.getElementById('pantallaEfectivoRecibido').textContent = '0.00';
     document.getElementById('pantallaEfectivoCambio').textContent = '0.00';
 }
-
 function pantallaEfectivoCancelar() {
     document.getElementById('pantallaEfectivo').classList.add('hidden');
     document.querySelector('.app-wrapper').classList.remove('hidden');
 }
-
 function pantallaEfectivoConfirmar() {
     const recibido = parseFloat(document.getElementById('pantallaEfectivoRecibido').textContent);
     const total = parseFloat(document.getElementById('pantallaEfectivoTotal').textContent.replace('$', ''));
-
     if (recibido < total) {
         mostrarNotificacion('Monto insuficiente', 'error');
         return;
     }
-
     registrarVenta(total, recibido);
     pantallaEfectivoCancelar();
 }
-
 async function registrarVenta(total, montoRecibido = null) {
     const transaccion = {
         id: Date.now(),
@@ -271,13 +275,11 @@ async function registrarVenta(total, montoRecibido = null) {
         montoRecibido: montoRecibido,
         cambio: montoRecibido ? (montoRecibido - total) : 0
     };
-
     store.transacciones.push(transaccion);
     store.ventasTotales += total;
     if (store.metodoPago === 'efectivo') store.ventasEfectivo += total;
     else store.ventasTarjeta += total;
     store.numTransacciones++;
-
     // Supabase Sync
     if (sb) {
         try {
@@ -287,12 +289,10 @@ async function registrarVenta(total, montoRecibido = null) {
             console.error('Supabase Exception:', err);
         }
     }
-
     guardarDatosLocalStorage();
     limpiarCarrito();
     mostrarNotificacion('✓ Venta registrada correctamente');
 }
-
 // --- PERSISTENCE ---
 function guardarDatosLocalStorage() {
     const fechaKey = new Date().toDateString();
@@ -308,7 +308,6 @@ function guardarDatosLocalStorage() {
         retiros: store.retiros,
         transacciones: store.transacciones
     };
-
     try {
         localStorage.setItem('panaderiaDatos', JSON.stringify(datos));
         const historico = JSON.parse(localStorage.getItem('panaderiaHistorico') || '{}');
@@ -318,17 +317,14 @@ function guardarDatosLocalStorage() {
         console.error('Error saving LocalStorage:', error);
     }
 }
-
 function cargarDatosLocalStorage() {
     try {
         const datosGuardados = localStorage.getItem('panaderiaDatos');
         if (datosGuardados) {
             const datos = JSON.parse(datosGuardados);
             const fechaHoy = new Date().toDateString();
-
             if (datos.categorias) store.categorias = datos.categorias;
             if (datos.categoriasInfo) store.categoriasInfo = datos.categoriasInfo;
-
             if (datos.fecha === fechaHoy) {
                 store.estadisticas = datos.estadisticas || {};
                 store.ventasTotales = datos.ventasTotales || 0;
@@ -343,7 +339,6 @@ function cargarDatosLocalStorage() {
         console.error('Error loading LocalStorage:', error);
     }
 }
-
 // --- VIEW SWITCHING ---
 function mostrarSeccion(seccionId) {
     // For now, TPV is the only section, but we handle the menu active state
@@ -354,32 +349,27 @@ function mostrarSeccion(seccionId) {
         }
     });
 }
-
 // --- ADMIN MODALS & LOGIC ---
 function abrirModalVentaManual() {
     document.getElementById('modalVentaManual').classList.remove('hidden');
 }
-
 function cerrarModalVentaManual() {
     document.getElementById('modalVentaManual').classList.add('hidden');
 }
-
 function abrirModalRetiro() {
+    renderOperacionesRapidas();
     document.getElementById('modalRetiro').classList.remove('hidden');
 }
-
 function cerrarModalRetiro() {
     document.getElementById('modalRetiro').classList.add('hidden');
 }
-
 function abrirModalIngreso() {
+    renderOperacionesRapidas();
     document.getElementById('modalIngreso').classList.remove('hidden');
 }
-
 function cerrarModalIngreso() {
     document.getElementById('modalIngreso').classList.add('hidden');
 }
-
 function confirmarRetiro() {
     const monto = parseFloat(document.getElementById('montoRetiro').value);
     const jus = document.getElementById('justificacionRetiro').value;
@@ -390,7 +380,6 @@ function confirmarRetiro() {
     cerrarModalRetiro();
     mostrarNotificacion('Retiro registrado');
 }
-
 function confirmarIngreso() {
     const monto = parseFloat(document.getElementById('montoIngreso').value);
     const con = document.getElementById('conceptoIngreso').value;
@@ -401,7 +390,6 @@ function confirmarIngreso() {
     cerrarModalIngreso();
     mostrarNotificacion('Ingreso registrado');
 }
-
 function seleccionarMetodoVentaManual(metodo) {
     const monto = parseFloat(document.getElementById('montoVentaManual').value);
     if (isNaN(monto) || monto <= 0) {
@@ -412,27 +400,22 @@ function seleccionarMetodoVentaManual(metodo) {
     registrarVenta(monto);
     cerrarModalVentaManual();
 }
-
 function abrirModalReporte() {
     store.fechaReporteVisualizando = new Date();
     actualizarVistaReporte();
     document.getElementById('modalReporte').classList.remove('hidden');
 }
-
 function cerrarModalReporte() {
     document.getElementById('modalReporte').classList.add('hidden');
 }
-
 function cambiarDiaReporte(dias) {
     store.fechaReporteVisualizando.setDate(store.fechaReporteVisualizando.getDate() + dias);
     actualizarVistaReporte();
 }
-
 function actualizarVistaReporte() {
     const fecha = store.fechaReporteVisualizando;
     const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById('reporteFechaModal').textContent = fecha.toLocaleDateString('es-ES', opciones);
-
     const fechaStr = fecha.toDateString();
     const historico = JSON.parse(localStorage.getItem('panaderiaHistorico') || '{}');
     const datosDelDia = historico[fechaStr] || {
@@ -443,34 +426,27 @@ function actualizarVistaReporte() {
         retiros: [],
         transacciones: []
     };
-
     document.getElementById('reporteVentasTotales').textContent = `$${datosDelDia.ventasTotales.toFixed(2)}`;
     document.getElementById('reporteVentasEfectivo').textContent = `$${datosDelDia.ventasEfectivo.toFixed(2)}`;
     document.getElementById('reporteVentasTarjeta').textContent = `$${datosDelDia.ventasTarjeta.toFixed(2)}`;
     document.getElementById('reporteNumTransacciones').textContent = datosDelDia.numTransacciones;
-
     const totalRetiros = datosDelDia.retiros.reduce((sum, r) => sum + r.monto, 0);
     document.getElementById('reporteTotalRetiros').textContent = `$${totalRetiros.toFixed(2)}`;
-
     const totalIngresos = datosDelDia.transacciones
         .filter(t => t.metodoPago === 'ingreso')
         .reduce((sum, t) => sum + t.total, 0);
     document.getElementById('reporteTotalIngresos').textContent = `$${totalIngresos.toFixed(2)}`;
-
     const saldoCaja = datosDelDia.ventasEfectivo - totalRetiros + totalIngresos;
     document.getElementById('reporteSaldoCaja').textContent = `$${saldoCaja.toFixed(2)}`;
 }
-
 function abrirModalProductos() {
     renderizarCategoriasSelect();
     renderizarListaProductos();
     document.getElementById('modalProductos').classList.remove('hidden');
 }
-
 function cerrarModalProductos() {
     document.getElementById('modalProductos').classList.add('hidden');
 }
-
 function renderizarCategoriasSelect() {
     const select = document.getElementById('productoCategoriaSelect');
     if (!select) return;
@@ -482,12 +458,10 @@ function renderizarCategoriasSelect() {
         select.appendChild(opt);
     });
 }
-
 function renderizarListaProductos() {
     const lista = document.getElementById('productosLista');
     if (!lista) return;
     lista.innerHTML = '';
-
     Object.keys(store.categorias).forEach(catKey => {
         const catHeader = document.createElement('div');
         catHeader.style.display = 'flex';
@@ -502,7 +476,6 @@ function renderizarListaProductos() {
             </div>
         `;
         lista.appendChild(catHeader);
-
         store.categorias[catKey].forEach((p, index) => {
             const item = document.createElement('div');
             item.className = 'win-inset';
@@ -527,7 +500,6 @@ function renderizarListaProductos() {
         });
     });
 }
-
 function abrirPromptSubcategoria(catKey) {
     const nombre = prompt('Nombre de la subcategoría:');
     if (nombre && nombre.trim()) {
@@ -543,17 +515,13 @@ function abrirPromptSubcategoria(catKey) {
         mostrarNotificacion('Subcategoría añadida');
     }
 }
-
 function guardarCategoria() {
     const nombre = document.getElementById('categoriaNombre').value.trim();
     if (!nombre) return mostrarNotificacion('Nombre inválido', 'error');
-
     const key = nombre.toLowerCase().replace(/\s+/g, '_');
     if (store.categorias[key]) return mostrarNotificacion('La categoría ya existe', 'error');
-
     store.categorias[key] = [];
     store.categoriasInfo[key] = { nombre: nombre };
-
     document.getElementById('categoriaNombre').value = '';
     guardarDatosLocalStorage();
     renderizarCategoriasSelect();
@@ -561,7 +529,6 @@ function guardarCategoria() {
     renderizarProductos();
     mostrarNotificacion('Categoría añadida');
 }
-
 function eliminarCategoria(key) {
     if (confirm(`¿Eliminar la categoría "${store.categoriasInfo[key]?.nombre || key}" y todos sus productos?`)) {
         delete store.categorias[key];
@@ -573,45 +540,36 @@ function eliminarCategoria(key) {
         mostrarNotificacion('Categoría eliminada');
     }
 }
-
 function moverProducto(catKey, index, direction) {
     const list = store.categorias[catKey];
     const newIdx = index + direction;
     if (newIdx < 0 || newIdx >= list.length) return;
-
     const temp = list[index];
     list[index] = list[newIdx];
     list[newIdx] = temp;
-
     guardarDatosLocalStorage();
     renderizarListaProductos();
     renderizarProductos();
 }
-
 function guardarProducto() {
     const nombre = document.getElementById('productoNombre').value.trim();
     const precio = parseFloat(document.getElementById('productoPrecio').value);
     const categoria = document.getElementById('productoCategoriaSelect').value;
-
     if (!nombre || isNaN(precio) || !categoria) {
         mostrarNotificacion('Datos inválidos', 'error');
         return;
     }
-
     const newId = Date.now();
     const prod = { id: newId, nombre, precio, categoria };
     if (!store.categorias[categoria]) store.categorias[categoria] = []; // Should not happen if select is populated
     store.categorias[categoria].push(prod);
-
     document.getElementById('productoNombre').value = '';
     document.getElementById('productoPrecio').value = '';
-
     guardarDatosLocalStorage();
     renderizarProductos();
     renderizarListaProductos();
     mostrarNotificacion('Producto guardado');
 }
-
 function eliminarProducto(catKey, id) {
     store.categorias[catKey] = store.categorias[catKey].filter(p => p.id !== id);
     guardarDatosLocalStorage();
@@ -619,7 +577,6 @@ function eliminarProducto(catKey, id) {
     renderizarListaProductos();
     mostrarNotificacion('Producto eliminado');
 }
-
 // --- REPORT PDF (Simplified for merge) ---
 function descargarReporte() {
     const { jsPDF } = window.jspdf;
@@ -632,14 +589,12 @@ function descargarReporte() {
     doc.text(`Fecha: ${store.fechaReporteVisualizando.toDateString()}`, 10, 20);
     doc.save(`Reporte_TPV_${Date.now()}.pdf`);
 }
-
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     cargarDatosLocalStorage();
     renderizarProductos();
     renderizarBilletesYMonedas();
     actualizarVistaCarrito();
-
     // Update main date
     const fechaEl = document.getElementById('fecha');
     if (fechaEl) {
